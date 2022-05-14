@@ -104,13 +104,19 @@ struct camera_t {
     m3x3_t rotation;
 };
 
+enum worker_status_t {
+    WS_READY,
+    WS_RUNNING,
+    WS_FINISHED
+};
+
 struct display_partition_t{
     int yStart;
     int yEnd;
     environment_t *env;
     viewport_t viewport;
     camera_t camera;
-    int status;//this is an int so I can add more granular status in the future
+    worker_status_t status;
     SDL_Thread *thread;
 };
 
@@ -517,23 +523,32 @@ HandleKeyboard(environment_t *env, float *yaw, float *pitch, float *roll, v3_t *
 
 
 int RayTracePatition(void *data) { 
-    display_partition_t *partition  = (display_partition_t*)data;
-    bitmapSettings_t *bitmap = partition->env->bitmap;
-    viewport_t vp = partition->viewport;
-    camera_t camera = partition->camera;
-
-    //Keep it square
-    float width = bitmap->height/2;
-    for (int x = -width; x < width; x++){
-        for(int y = partition->yStart; y < partition->yEnd; y++){
-            v3_t direction = CanvasToViewport(bitmap, vp, {(float)x, (float)y}) * camera.rotation;
-            uint32_t color = TraceRay(camera.position, direction, 1, FINF, 10);
-            CanvasPutPixel(bitmap, {(float)x, (float)y}, color);
+    while(true){
+        display_partition_t *partition  = (display_partition_t*)data;
+        if (partition->status != WS_READY){
+            SDL_Delay(1);
+            continue;
         }
-    }
 
-    //TODO increment this for each value of X to track complete status
-    partition->status = 1;
+        bitmapSettings_t *bitmap = partition->env->bitmap;
+        viewport_t vp = partition->viewport;
+        camera_t camera = partition->camera;
+
+        partition->status = WS_RUNNING;
+
+        //Keep it square
+        float width = bitmap->height/2;
+        for (int x = -width; x < width; x++){
+            for(int y = partition->yStart; y < partition->yEnd; y++){
+                v3_t direction = CanvasToViewport(bitmap, vp, {(float)x, (float)y}) * camera.rotation;
+                uint32_t color = TraceRay(camera.position, direction, 1, FINF, 10);
+                CanvasPutPixel(bitmap, {(float)x, (float)y}, color);
+            }
+        }
+
+        partition->status = WS_FINISHED;
+
+    }
     return 0; 
 } 
 
@@ -579,14 +594,9 @@ RayTrace(environment_t *env){
         displayPart[i]->env      = env;
         displayPart[i]->viewport = vp;
         displayPart[i]->camera   = camera;
-        displayPart[i]->status   = 0;
+        displayPart[i]->status   = WS_READY;
 
         yStart += yStep;
-
-        displayPart[i]->thread = SDL_CreateThread( 
-            RayTracePatition,       // thread function name
-            "",
-            displayPart[i]);// returns the thread identifier 
 
         if (displayPart[i]->thread == NULL) {
            exit(3);
@@ -606,7 +616,12 @@ AllocatePartitions(){
             exit(2);
         }
 
-        displayPart[i]->status = 0;
+        displayPart[i]->status = WS_FINISHED;
+
+        displayPart[i]->thread = SDL_CreateThread( 
+            RayTracePatition,       // thread function name
+            "",
+            displayPart[i]);// returns the thread identifier 
     }
 }
 
@@ -614,22 +629,20 @@ bool
 RayThread(environment_t *env){
     static bool initialized = false;
 
-    if (initialized){
-        // Wait until all threads have terminated.
-        bool complete = true;
-        for(int i = 0; i < MAX_THREADS; i++){
-            if (!displayPart[i]->status)
-                complete = false;
-        }
-
-        if (complete)
-            RayTrace(env);
-
-    } else {
+    if (!initialized){
         AllocatePartitions();
         initialized = true;
-        RayTrace(env);
     }
+
+    // Wait until all workers have finished.
+    bool complete = true;
+    for(int i = 0; i < MAX_THREADS; i++){
+        if (displayPart[i]->status != WS_FINISHED)
+            complete = false;
+    }
+
+    if (complete)
+        RayTrace(env);
 
     return true;
 }
