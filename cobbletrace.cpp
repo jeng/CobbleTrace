@@ -8,8 +8,8 @@
 #include "draw2d.h"
 #include "raythread.h"
 
-#define WIDTH  (600)
-#define HEIGHT (600)
+#define WIDTH  (640)
+#define HEIGHT (640)
 #define EVENT_QUEUE_SIZE 1000
 
 
