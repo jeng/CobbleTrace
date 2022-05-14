@@ -17,7 +17,7 @@
 
 // I still have a lot of things I would like to add:
 //
-// TODO - Make a true boss worker, provide a status bar, do not hang the UI
+// DONE - Make a true boss worker, provide a status bar, do not hang the UI
 // TODO - Optimize by tracing every other pixel and averaging the one between
 // TODO - Add memoization after doing some profiling
 // DONE - allow for different size bitmaps and blit to screen
@@ -55,6 +55,7 @@
 
 const float FINF = 4294967296.0;
 const uint32_t BACKGROUND_COLOR = RgbToColor(0x33, 0x33, 0x33);
+const int MAX_THREADS = 8;
 
 struct viewport_t {
     float width;
@@ -102,6 +103,19 @@ struct camera_t {
     v3_t position;
     m3x3_t rotation;
 };
+
+struct display_partition_t{
+    int yStart;
+    int yEnd;
+    environment_t *env;
+    viewport_t viewport;
+    camera_t camera;
+    int status;//this is an int so I can add more granular status in the future
+    SDL_Thread *thread;
+};
+
+static display_partition_t *displayPart[MAX_THREADS];
+
 
 // This is the ray intersect method from Glassner's Ray Tracing book(pg 50) and Scratch A Pixel
 //
@@ -501,13 +515,6 @@ HandleKeyboard(environment_t *env, float *yaw, float *pitch, float *roll, v3_t *
     return result;
 }
 
-struct display_partition_t{
-    int yStart;
-    int yEnd;
-    environment_t *env;
-    viewport_t viewport;
-    camera_t camera;
-};
 
 int RayTracePatition(void *data) { 
     display_partition_t *partition  = (display_partition_t*)data;
@@ -525,6 +532,8 @@ int RayTracePatition(void *data) {
         }
     }
 
+    //TODO increment this for each value of X to track complete status
+    partition->status = 1;
     return 0; 
 } 
 
@@ -539,10 +548,8 @@ RayTrace(environment_t *env){
     bitmapSettings_t *bitmap = env->bitmap;
     viewport_t vp = {1, 1, 1};
     v3_t origin = {0, 0, 0};
-    const int MAX_THREADS = 8;//4;
-    display_partition_t *displayPart[MAX_THREADS];
 
-   changesMade = changesMade || HandleKeyboard(env, &yaw, &pitch, &roll, &cpos);
+    changesMade = changesMade || HandleKeyboard(env, &yaw, &pitch, &roll, &cpos);
 
     if (!changesMade)
         return;
@@ -561,64 +568,69 @@ RayTrace(environment_t *env){
     camera.rotation.data[2][1] = cos(pitch) * sin(roll);
     camera.rotation.data[2][2] = cos(pitch) * cos(roll);
 
-    SDL_Thread *hThreadArray[MAX_THREADS];
     float height = bitmap->height/2; 
     float yStart = -height;
     float yStep  = bitmap->height/MAX_THREADS;
 
-    for( int i=0; i<MAX_THREADS; i++ )
-    {
-        // Allocate memory for thread data.
-        displayPart[i] = (display_partition_t*) calloc(1, sizeof(display_partition_t));
-
-        if( displayPart[i] == NULL ) {
-           // If the array allocation fails, the system is out of memory
-           // so there is no point in trying to print an error message.
-           // Just terminate execution.
-            exit(2);
-        }
-
+    for(int i=0; i < MAX_THREADS; i++) {
         // Generate unique data for each thread to work with.
         displayPart[i]->yStart   = yStart;
         displayPart[i]->yEnd     = yStart+yStep;
         displayPart[i]->env      = env;
         displayPart[i]->viewport = vp;
         displayPart[i]->camera   = camera;
+        displayPart[i]->status   = 0;
 
         yStart += yStep;
 
-        // Create the thread to begin execution on its own.
-
-        hThreadArray[i] = SDL_CreateThread( 
+        displayPart[i]->thread = SDL_CreateThread( 
             RayTracePatition,       // thread function name
             "",
             displayPart[i]);// returns the thread identifier 
 
-        if (hThreadArray[i] == NULL) {
+        if (displayPart[i]->thread == NULL) {
            exit(3);
         }
-    } // End of main thread creation loop.
-
-    // Wait until all threads have terminated.
-    for(int i = 0; i < MAX_THREADS; i++){
-        SDL_WaitThread(hThreadArray[i], NULL);
     }
+}
 
-    // Close all thread handles and free memory allocations.
+void
+AllocatePartitions(){
+    for(int i = 0; i < MAX_THREADS; i++){
+        displayPart[i] = (display_partition_t*) calloc(1, sizeof(display_partition_t));
 
-    //TODO I'm not crazy about doing this every time. We know the number of threads at the
-    //start of the program.  Do the allocation then
-    for(int i=0; i<MAX_THREADS; i++) {
-        if(displayPart[i] != NULL) {
-            free(displayPart[i]);
-            displayPart[i] = NULL;    // Ensure address is not reused.
+        if( displayPart[i] == NULL ) {
+            // If the array allocation fails, the system is out of memory
+            // so there is no point in trying to print an error message.
+            // Just terminate execution.
+            exit(2);
         }
+
+        displayPart[i]->status = 0;
     }
 }
 
 bool
 RayThread(environment_t *env){
-    RayTrace(env);
+    static bool initialized = false;
+
+    if (initialized){
+        // Wait until all threads have terminated.
+        bool complete = true;
+        for(int i = 0; i < MAX_THREADS; i++){
+            if (!displayPart[i]->status)
+                complete = false;
+        }
+
+        if (complete)
+            RayTrace(env);
+
+    } else {
+        AllocatePartitions();
+        initialized = true;
+        RayTrace(env);
+    }
+
     return true;
 }
 
