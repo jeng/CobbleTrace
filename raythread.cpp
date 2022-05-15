@@ -18,7 +18,7 @@
 // I still have a lot of things I would like to add:
 //
 // DONE - Make a true boss worker, provide a status bar, do not hang the UI
-// TODO - Optimize by tracing every other pixel and averaging the one between
+// DONE - Optimize by tracing every other pixel and averaging the one between
 // TODO - Add memoization after doing some profiling
 // DONE - allow for different size bitmaps and blit to screen
 // DONE - Use previous image when a change has not been made to the scene
@@ -56,6 +56,7 @@
 const float FINF = 4294967296.0;
 const uint32_t BACKGROUND_COLOR = RgbToColor(0x33, 0x33, 0x33);
 const int MAX_THREADS = 8;
+const bool SUBSAMPLING = true;
 
 struct viewport_t {
     float width;
@@ -539,10 +540,36 @@ int RayTracePatition(void *data) {
         //Keep it square
         float width = bitmap->height/2;
         for (int x = -width; x < width; x++){
-            for(int y = partition->yStart; y < partition->yEnd; y++){
+            uint32_t lastColor = 0; 
+            for(int y = partition->yStart; y < partition->yEnd;){ 
                 v3_t direction = CanvasToViewport(bitmap, vp, {(float)x, (float)y}) * camera.rotation;
                 uint32_t color = TraceRay(camera.position, direction, 1, FINF, 10);
                 CanvasPutPixel(bitmap, {(float)x, (float)y}, color);
+
+                if (SUBSAMPLING){
+                    if (y == partition->yStart)
+                        lastColor = color;
+
+                    //TODO add an average function to color.h that averages a list of colors
+                    rgb_t rgbLast = ColorToRgb(lastColor);
+                    rgb_t rgbColor = ColorToRgb(color);
+                    rgb_t rgbAvg;
+                    rgbAvg.r = min((rgbLast.r + rgbColor.r)/2, 0xff);
+                    rgbAvg.g = min((rgbLast.g + rgbColor.g)/2, 0xff);
+                    rgbAvg.b = min((rgbLast.b + rgbColor.b)/2, 0xff);
+                    uint32_t avgColor = RgbToColor(rgbAvg);
+                    CanvasPutPixel(bitmap, {(float)x, (float)y-1}, avgColor);
+
+                    if (y + 2 >= partition->yEnd)
+                        y++;
+                    else
+                        y+=2;
+
+                }
+                else
+                    y++;
+
+                lastColor = color;
             }
         }
 
