@@ -7,6 +7,7 @@
 #include "SDL.h"
 #include "draw2d.h"
 #include "raythread.h"
+#include "scenefile.h"
 
 #define WIDTH  (640)
 #define HEIGHT (640)
@@ -14,6 +15,20 @@
 
 
 int main(int argc, char *argv[]){
+
+    char s[1024];
+    sprintf(s, "argc %d\n", argc);
+    SDL_Log(s);
+
+    
+    if (argc > 1){
+        sprintf(s, "%s\n", argv[1]);
+        ParseSceneFile(argv[1]);
+        SDL_Log(s);
+        return 1;
+    }
+
+
     //https://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlinit.html
     int result = SDL_Init(SDL_INIT_EVERYTHING);
     
