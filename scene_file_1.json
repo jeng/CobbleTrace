@@ -20,7 +20,7 @@
             "type": "sphere",
             "center": [-2, 0, 4],
             "radius": 1,
-            "color": [255, 0, 0],
+            "color": [255, 0, 255],
             "specular": 10,
             "reflection": 0.3
         },
@@ -61,7 +61,7 @@
             "p1": [-1, 2, 3],
             "p2": [0, 2.25, -2],
             "p3": [1, 2, 1],
-            "color": [255, 0, 0],
+            "color": [0, 0, 255],
             "specular": 100,
             "reflection": 0.25
         }

@@ -93,6 +93,17 @@ ColorToRgb(uint32_t color, uint8_t *r, uint8_t *g, uint8_t *b){
     *b = color & 0xff;
 }
 
+inline rgb_t
+ColorToRgb(uint32_t color){
+  uint8_t r, g, b;
+  rgb_t result;
+  ColorToRgb(color, &r, &g, &b);
+  result.r = r;
+  result.g = g;
+  result.b = b;
+  return result;
+}
+
 inline v3_t
 ColorToRgbV3(uint32_t color){
   uint8_t r, g, b;

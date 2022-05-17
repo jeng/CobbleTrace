@@ -18,7 +18,7 @@
 // I still have a lot of things I would like to add:
 //
 // DONE - Make a true boss worker, provide a status bar, do not hang the UI
-// TODO - Optimize by tracing every other pixel and averaging the one between
+// DONE - Optimize by tracing every other pixel and averaging the one between
 // TODO - Add memoization after doing some profiling
 // DONE - allow for different size bitmaps and blit to screen
 // DONE - Use previous image when a change has not been made to the scene
@@ -56,7 +56,7 @@
 const float FINF = 4294967296.0;
 const uint32_t BACKGROUND_COLOR = RgbToColor(0x33, 0x33, 0x33);
 const int MAX_THREADS = 16;
-
+const bool SUBSAMPLING = true;
 
 enum worker_status_t {
     WS_READY,
@@ -69,7 +69,7 @@ struct display_partition_t{
     int yEnd;
     environment_t *env;
     viewport_t viewport;
-    camera_t camera;
+    scene_t *scene;    
     worker_status_t status;
     SDL_Thread *thread;
 };
@@ -194,91 +194,28 @@ CanvasToViewport(bitmapSettings_t *bitmap, viewport_t viewport, v2_t position){
 static bool
 ClosestIntersection(v3_t origin, v3_t direction, 
     float tmin, float tmax, 
-    float *tclosest, scene_object_t *closestScene){
+    float *tclosest, scene_object_t *closestScene,
+    scene_t *scene){
 
     *tclosest = FINF;
 
-    //TODO build environment from description language
-    //Beginning of environment
-    const int sceneLength = 8;
-    scene_object_t scene[sceneLength];
-
-    scene[0].type = OT_SPHERE;
-    scene[0].sphere.center = {0, -1, 3};
-    scene[0].sphere.radius = 1;
-    scene[0].material.color = RgbToColor(0xff, 0x00, 0x00);
-    scene[0].material.specular = 500;//250 + (250 * cos(theta+=0.1));//500; //shiny
-    scene[0].material.reflection = 0.2;//0 to 1
-
-    scene[1].type = OT_SPHERE;
-    scene[1].sphere.center = {2, 0, 4};
-    scene[1].sphere.radius = 1;
-    scene[1].material.color = RgbToColor(0x00, 0xff, 0x00);
-    scene[1].material.specular = 500; //shiny
-    scene[1].material.reflection = 0.3;//0 to 1
-    
-    scene[2].type = OT_SPHERE;
-    scene[2].sphere.center = {-2, 0, 4};
-    scene[2].sphere.radius = 1;
-    scene[2].material.color = RgbToColor(0xff, 0x00, 0xff);
-    scene[2].material.specular = 10; //somewhat shiny
-    scene[2].material.reflection = 0.4;//0 to 1
-
-    scene[3].type = OT_SPHERE;
-    scene[3].sphere.center = {0, -5001, 0};
-    scene[3].sphere.radius = 5000;
-    scene[3].material.color = RgbToColor(0xff, 0xff, 0x00);
-    scene[3].material.specular = 1000; //very shiny
-    scene[3].material.reflection = 0.5;//0 to 1
-
-    scene[4].type = OT_SPHERE;
-    scene[4].sphere.center = {-1, 2, 3};
-    scene[4].sphere.radius = 0.10;
-    scene[4].material.color = RgbToColor(0x55, 0x00, 0x99);
-    scene[4].material.specular = 100; //somewhat shiny
-    scene[4].material.reflection = 0;//0 to 1
-
-    scene[5].type = OT_SPHERE;
-    scene[5].sphere.center = {0, 2.25, -2};
-    scene[5].sphere.radius = 0.10;
-    scene[5].material.color = RgbToColor(0x55, 0x77, 0x00);
-    scene[5].material.specular = 100; //somewhat shiny
-    scene[5].material.reflection = 0;//0 to 1
-
-    scene[6].type = OT_SPHERE;
-    scene[6].sphere.center = {1, 2, 1};
-    scene[6].sphere.radius = 0.10;
-    scene[6].material.color = RgbToColor(0x55, 0x77, 0x99);
-    scene[6].material.specular = 100; //somewhat shiny
-    scene[6].material.reflection = 0;//0 to 1
-
-    scene[7].type = OT_TRIANGLE;
-    scene[7].triangle.p1 = scene[4].sphere.center;
-    scene[7].triangle.p2 = scene[5].sphere.center;
-    scene[7].triangle.p3 = scene[6].sphere.center;
-    scene[7].material.color = RgbToColor(0xff, 0x00, 0x00);
-    scene[7].material.specular = 100; //somewhat shiny
-    scene[7].material.reflection = 0.25;//0 to 1
- 
-   //End of environment
-
     bool found = false;
-    scene_object_t workingScene;
-    for(int i = 0; i < sceneLength; i++){
-        workingScene = scene[i];
-        switch(scene[i].type){
+    scene_object_t workingObject;
+    for(int i = 0; i < scene->objectStack.index; i++){
+        workingObject = scene->objectStack.objects[i];
+        switch(workingObject.type){
             case OT_SPHERE: {
                 float t1, t2;
-                IntersectRaySphere(origin, direction, workingScene.sphere, &t1, &t2); 
+                IntersectRaySphere(origin, direction, workingObject.sphere, &t1, &t2); 
                 if(tmin <= t1 && t1 <= tmax && t1 <= *tclosest){
                     *tclosest = t1;
-                    *closestScene = workingScene;
+                    *closestScene = workingObject;
                     found = true;
                 }
 
                 if(tmin <= t2 && t2 <= tmax && t2 <= *tclosest){
                     *tclosest = t2;
-                    *closestScene = workingScene;
+                    *closestScene = workingObject;
                     found = true;
                 }
 
@@ -288,10 +225,10 @@ ClosestIntersection(v3_t origin, v3_t direction,
             {
                 static int set = 0;
                 float t, u, v;
-                bool hit = IntersectRayTriangle(origin, direction, workingScene.triangle, &t, &u, &v);
+                bool hit = IntersectRayTriangle(origin, direction, workingObject.triangle, &t, &u, &v);
                  if(hit && tmin <= t && t <= tmax && t <= *tclosest){
                     *tclosest = t;
-                    *closestScene = workingScene;
+                    *closestScene = workingObject;
                     found = true;
                 }
                 break;
@@ -308,10 +245,10 @@ ReflectRay(v3_t ray, v3_t normal) {
 }
 
 static float
-ComputeLighting(v3_t position, v3_t normal, v3_t viewVector, light_t *lights, int numLights, int specular){
+ComputeLighting(v3_t position, v3_t normal, v3_t viewVector, scene_t *scene, int specular){
     float intensity = 0.0;
-    for(int i = 0; i < numLights; i++){
-        light_t light = lights[i];
+    for(int i = 0; i < scene->lightStack.index; i++){
+        light_t light = scene->lightStack.lights[i];
         bool hasLightRay = false;
         v3_t lightRay;
         float tMax;
@@ -336,7 +273,7 @@ ComputeLighting(v3_t position, v3_t normal, v3_t viewVector, light_t *lights, in
             scene_object_t closestScene;
             float tclosest;
             bool shadowFound = 
-                ClosestIntersection(position, lightRay, 0.001, tMax, &tclosest, &closestScene);
+                ClosestIntersection(position, lightRay, 0.001, tMax, &tclosest, &closestScene, scene);
 
             if (shadowFound)
                 continue;
@@ -386,30 +323,18 @@ NormalOfSceneObject(scene_object_t *sceneObject, v3_t position, v3_t direction){
 
 
 static uint32_t
-TraceRay(v3_t origin, v3_t direction, float tmin, float tmax, int recursionDepth){
-
-    light_t lights[3];
-    lights[0].type = LT_AMBIENT;
-    lights[0].intensity = 0.2;
-
-    lights[1].type = LT_POINT;
-    lights[1].intensity = 0.6;
-    lights[1].position = {2, 1, 0};
-
-    lights[2].type = LT_DIRECTIONAL;
-    lights[2].intensity = 0.2;
-    lights[2].direction = {1, 4, 4};
+TraceRay(v3_t origin, v3_t direction, float tmin, float tmax, int recursionDepth, scene_t *scene){
 
     float tclosest;
     scene_object_t closestScene;
-    bool found = ClosestIntersection(origin, direction, tmin, tmax, &tclosest, &closestScene);
+    bool found = ClosestIntersection(origin, direction, tmin, tmax, &tclosest, &closestScene, scene);
     if (found){
         v3_t position = origin + tclosest * direction;
         v3_t normal = NormalOfSceneObject(&closestScene, position, direction);
         hsv_t hsv = ColorToHsv(closestScene.material.color);
         //TODO environment that controls the actions for the current scene, (reflection, shadow, specular, ...)
         if (1){
-            hsv.v = ComputeLighting(position, normal, -direction, &lights[0], 3, closestScene.material.specular);
+            hsv.v = ComputeLighting(position, normal, -direction, scene, closestScene.material.specular);
             uint32_t localColor = HsvToColor(hsv);
         
             float reflection = closestScene.material.reflection;            
@@ -417,7 +342,7 @@ TraceRay(v3_t origin, v3_t direction, float tmin, float tmax, int recursionDepth
                 return localColor;
 
             v3_t reflectedRay = ReflectRay(-direction, normal);
-            uint32_t reflectedColor = TraceRay(position, reflectedRay, 0.001, FINF, recursionDepth - 1);
+            uint32_t reflectedColor = TraceRay(position, reflectedRay, 0.001, FINF, recursionDepth - 1, scene);
 
             v3_t localColorVec = ColorToRgbV3(localColor);
             v3_t reflectedColorVec = ColorToRgbV3(reflectedColor);
@@ -486,17 +411,43 @@ int RayTracePatition(void *data) {
 
         bitmapSettings_t *bitmap = partition->env->bitmap;
         viewport_t vp = partition->viewport;
-        camera_t camera = partition->camera;
+        scene_t *scene = partition->scene;
 
         partition->status = WS_RUNNING;
 
         //Keep it square
         float width = bitmap->height/2;
         for (int x = -width; x < width; x++){
-            for(int y = partition->yStart; y < partition->yEnd; y++){
-                v3_t direction = CanvasToViewport(bitmap, vp, {(float)x, (float)y}) * camera.rotation;
-                uint32_t color = TraceRay(camera.position, direction, 1, FINF, 10);
+            uint32_t lastColor = 0; 
+            for(int y = partition->yStart; y < partition->yEnd;){ 
+                v3_t direction = CanvasToViewport(bitmap, vp, {(float)x, (float)y}) * scene->camera.rotation;
+                uint32_t color = TraceRay(scene->camera.position, direction, 1, FINF, 10, scene);
                 CanvasPutPixel(bitmap, {(float)x, (float)y}, color);
+
+                if (SUBSAMPLING){
+                    if (y == partition->yStart)
+                        lastColor = color;
+
+                    //TODO add an average function to color.h that averages a list of colors
+                    rgb_t rgbLast = ColorToRgb(lastColor);
+                    rgb_t rgbColor = ColorToRgb(color);
+                    rgb_t rgbAvg;
+                    rgbAvg.r = min((rgbLast.r + rgbColor.r)/2, 0xff);
+                    rgbAvg.g = min((rgbLast.g + rgbColor.g)/2, 0xff);
+                    rgbAvg.b = min((rgbLast.b + rgbColor.b)/2, 0xff);
+                    uint32_t avgColor = RgbToColor(rgbAvg);
+                    CanvasPutPixel(bitmap, {(float)x, (float)y-1}, avgColor);
+
+                    if (y + 2 >= partition->yEnd)
+                        y++;
+                    else
+                        y+=2;
+
+                }
+                else
+                    y++;
+
+                lastColor = color;
             }
         }
 
@@ -508,7 +459,7 @@ int RayTracePatition(void *data) {
 
 
 static void
-RayTrace(environment_t *env){
+RayTrace(environment_t *env, scene_t *scene){
     static bool changesMade = true;
     static float yaw = 0;
     static float pitch = 0;
@@ -518,24 +469,22 @@ RayTrace(environment_t *env){
     viewport_t vp = {1, 1, 1};
     v3_t origin = {0, 0, 0};
 
-    changesMade = changesMade || HandleKeyboard(env, &yaw, &pitch, &roll, &cpos);
+    changesMade = changesMade || HandleKeyboard(env, &yaw, &pitch, &roll, &scene->camera.position);
 
     if (!changesMade)
         return;
 
     changesMade = false;
-
-    camera_t camera;
-    camera.position = cpos;
-    camera.rotation.data[0][0] = cos(yaw) * cos(pitch);
-    camera.rotation.data[0][1] = cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll);
-    camera.rotation.data[0][2] = cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll);
-    camera.rotation.data[1][0] = sin(yaw) * cos(pitch);
-    camera.rotation.data[1][1] = sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll);
-    camera.rotation.data[1][2] = sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll);
-    camera.rotation.data[2][0] = -sin(yaw);
-    camera.rotation.data[2][1] = cos(pitch) * sin(roll);
-    camera.rotation.data[2][2] = cos(pitch) * cos(roll);
+    
+    scene->camera.rotation.data[0][0] = cos(yaw) * cos(pitch);
+    scene->camera.rotation.data[0][1] = cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll);
+    scene->camera.rotation.data[0][2] = cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll);
+    scene->camera.rotation.data[1][0] = sin(yaw) * cos(pitch);
+    scene->camera.rotation.data[1][1] = sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll);
+    scene->camera.rotation.data[1][2] = sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll);
+    scene->camera.rotation.data[2][0] = -sin(yaw);
+    scene->camera.rotation.data[2][1] = cos(pitch) * sin(roll);
+    scene->camera.rotation.data[2][2] = cos(pitch) * cos(roll);
 
     float height = bitmap->height/2; 
     float yStart = -height;
@@ -547,7 +496,7 @@ RayTrace(environment_t *env){
         displayPart[i]->yEnd     = yStart+yStep;
         displayPart[i]->env      = env;
         displayPart[i]->viewport = vp;
-        displayPart[i]->camera   = camera;
+        displayPart[i]->scene   = scene;
         displayPart[i]->status   = WS_READY;
 
         yStart += yStep;
@@ -580,7 +529,7 @@ AllocatePartitions(){
 }
 
 bool
-RayThread(environment_t *env){
+RayThread(environment_t *env, scene_t *scene){
     static bool initialized = false;
 
     if (!initialized){
@@ -596,7 +545,7 @@ RayThread(environment_t *env){
     }
 
     if (complete)
-        RayTrace(env);
+        RayTrace(env, scene);
 
     return true;
 }

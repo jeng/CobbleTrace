@@ -16,16 +16,17 @@
 
 int main(int argc, char *argv[]){
 
+    scene_t scene;
     char s[1024];
     sprintf(s, "argc %d\n", argc);
     SDL_Log(s);
 
     
+    //TODO load the default scene if we don't get a file
     if (argc > 1){
         sprintf(s, "%s\n", argv[1]);
-        ParseSceneFile(argv[1]);
-        SDL_Log(s);
-        return 1;
+        InitSceneData(&scene);
+        ParseSceneFile(argv[1], &scene);
     }
 
 
@@ -86,7 +87,7 @@ int main(int argc, char *argv[]){
             }
         }
 
-        RayThread(&env);
+        RayThread(&env, &scene);
         Blit(&env);
         SDL_Delay(33);
     }
