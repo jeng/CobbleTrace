@@ -15,10 +15,10 @@ struct String {
 
 
 String
-CharPtrToString(char *p){
+CharPtrToString(const char *p){
     String result;
     result.size = 0;
-    result.data = p;
+    result.data = (char *)p;
     while(*p != '\0'){
         result.size++;
         p++;
@@ -38,7 +38,7 @@ IsStringEqual(String *a, String *b){
 }
 
 bool
-IsStringEqual(String *a, char *b){
+IsStringEqual(String *a, const char *b){
     String sB = CharPtrToString(b);
     return IsStringEqual(a, &sB);
 }
