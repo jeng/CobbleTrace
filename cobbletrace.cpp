@@ -7,13 +7,31 @@
 #include "SDL.h"
 #include "draw2d.h"
 #include "raythread.h"
+#include "scenefile.h"
 
 #define WIDTH  (640)
 #define HEIGHT (640)
 #define EVENT_QUEUE_SIZE 1000
 
+void Help(){
+    SDL_Log("cobbletrace scenefile\n\n");
+    SDL_Log("To run cobbletrace provide a scene file.  See scene_file_1.json for an example.");
+    exit(0);
+}
 
 int main(int argc, char *argv[]){
+
+    scene_t scene;
+    
+    //TODO load the default scene if we don't get a file
+    if (argc > 1){
+        InitSceneData(&scene);
+        ParseSceneFile(argv[1], &scene);
+    } else {
+        Help();
+    }
+
+
     //https://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlinit.html
     int result = SDL_Init(SDL_INIT_EVERYTHING);
     
@@ -71,7 +89,7 @@ int main(int argc, char *argv[]){
             }
         }
 
-        RayThread(&env);
+        RayThread(&env, &scene);
         Blit(&env);
         SDL_Delay(33);
     }
