@@ -23,7 +23,7 @@
 // DONE - allow for different size bitmaps and blit to screen
 // DONE - Use previous image when a change has not been made to the scene
 // TODO - Copy the object loading code from software renderer
-// TODO - Allow for scene files to be opened
+// DONE - Allow for scene files to be loaded
 // TODO - Allow for object files to be specified in the scene
 // TODO - Add refraction
 // TODO - Add depth of field
@@ -36,12 +36,13 @@
 // DONE - Create a standalone version
 //  1) Just break out this code so you can upload something
 //  2) Make SDL version that it can run on linux too
-// TODO - test compiling on linux
+// DONE - test compiling on linux
 // TODO - add a gui
 // TODO - Create a distributed version I can run on the raspberry pi cluster
 //  1) this is one of the articles I had on my todo list
 // TODO - Fix camera rotation
 // TODO - SDL is the platform layer here so I can remove eventQueue code
+// TODO - Check the reflection on triangles it might be broken
 
 #define _USE_MATH_DEFINES // for C++
 #include <cmath>
@@ -55,8 +56,8 @@
 
 const float FINF = 4294967296.0;
 const uint32_t BACKGROUND_COLOR = RgbToColor(0x33, 0x33, 0x33);
-const int MAX_THREADS = 16;
-const bool SUBSAMPLING = true;
+//const int MAX_THREADS = 16;
+//const bool SUBSAMPLING = true;
 
 enum worker_status_t {
     WS_READY,
@@ -74,7 +75,7 @@ struct display_partition_t{
     SDL_Thread *thread;
 };
 
-static display_partition_t *displayPart[MAX_THREADS];
+static display_partition_t **displayPart;
 
 
 // This is the ray intersect method from Glassner's Ray Tracing book(pg 50) and Scratch A Pixel
@@ -424,7 +425,7 @@ int RayTracePatition(void *data) {
                 uint32_t color = TraceRay(scene->camera.position, direction, 1, FINF, 10, scene);
                 CanvasPutPixel(bitmap, {(float)x, (float)y}, color);
 
-                if (SUBSAMPLING){
+                if (scene->settings.subsampling){
                     if (y == partition->yStart)
                         lastColor = color;
 
@@ -488,9 +489,9 @@ RayTrace(environment_t *env, scene_t *scene){
 
     float height = bitmap->height/2; 
     float yStart = -height;
-    float yStep  = bitmap->height/MAX_THREADS;
+    float yStep  = bitmap->height/scene->settings.numberOfThreads;
 
-    for(int i=0; i < MAX_THREADS; i++) {
+    for(int i=0; i < scene->settings.numberOfThreads; i++) {
         // Generate unique data for each thread to work with.
         displayPart[i]->yStart   = yStart;
         displayPart[i]->yEnd     = yStart+yStep;
@@ -508,8 +509,11 @@ RayTrace(environment_t *env, scene_t *scene){
 }
 
 void
-AllocatePartitions(){
-    for(int i = 0; i < MAX_THREADS; i++){
+AllocatePartitions(scene_t *scene){
+
+    displayPart = (display_partition_t**)calloc(scene->settings.numberOfThreads, sizeof(display_partition_t));
+
+    for(int i = 0; i < scene->settings.numberOfThreads; i++){
         displayPart[i] = (display_partition_t*) calloc(1, sizeof(display_partition_t));
 
         if( displayPart[i] == NULL ) {
@@ -533,13 +537,13 @@ RayThread(environment_t *env, scene_t *scene){
     static bool initialized = false;
 
     if (!initialized){
-        AllocatePartitions();
+        AllocatePartitions(scene);
         initialized = true;
     }
 
     // Wait until all workers have finished.
     bool complete = true;
-    for(int i = 0; i < MAX_THREADS; i++){
+    for(int i = 0; i < scene->settings.numberOfThreads; i++){
         if (displayPart[i]->status != WS_FINISHED)
             complete = false;
     }

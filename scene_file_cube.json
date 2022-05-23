@@ -1,0 +1,1224 @@
+{
+    "objects":[
+        {
+            "type": "sphere",
+            "center": [0.00, 0.00, 6.00],
+            "radius": 10.000000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.00, 0.00, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.00, 1.00, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.71, 1.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [0.0000, 0.0000, 2.0000],
+            "p2": [0.0000, 1.0000, 2.0000],
+            "p3": [0.7071, 1.0000, 2.7071],
+            "color": [0, 255, 0],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [0.00, 0.00, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.71, 1.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.71, 0.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [0.0000, 0.0000, 2.0000],
+            "p2": [0.7071, 1.0000, 2.7071],
+            "p3": [0.7071, 0.0000, 2.7071],
+            "color": [0, 255, 0],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [0.71, 0.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.71, 1.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.00, 1.00, 3.41],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [0.7071, 0.0000, 2.7071],
+            "p2": [0.7071, 1.0000, 2.7071],
+            "p3": [-0.0000, 1.0000, 3.4142],
+            "color": [0, 255, 0],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [0.71, 0.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.00, 1.00, 3.41],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.00, 0.00, 3.41],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [0.7071, 0.0000, 2.7071],
+            "p2": [-0.0000, 1.0000, 3.4142],
+            "p3": [-0.0000, 0.0000, 3.4142],
+            "color": [0, 255, 0],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [0.00, 1.00, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 1.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.00, 1.00, 3.41],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [0.0000, 1.0000, 2.0000],
+            "p2": [-0.7071, 1.0000, 2.7071],
+            "p3": [-0.0000, 1.0000, 3.4142],
+            "color": [0, 255, 0],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [0.00, 1.00, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.00, 1.00, 3.41],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.71, 1.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [0.0000, 1.0000, 2.0000],
+            "p2": [-0.0000, 1.0000, 3.4142],
+            "p3": [0.7071, 1.0000, 2.7071],
+            "color": [0, 255, 0],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.00, 0.00, 3.41],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.00, 1.00, 3.41],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 1.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.0000, 0.0000, 3.4142],
+            "p2": [-0.0000, 1.0000, 3.4142],
+            "p3": [-0.7071, 1.0000, 2.7071],
+            "color": [0, 255, 0],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.00, 0.00, 3.41],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 1.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 0.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.0000, 0.0000, 3.4142],
+            "p2": [-0.7071, 1.0000, 2.7071],
+            "p3": [-0.7071, 0.0000, 2.7071],
+            "color": [0, 255, 0],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.00, 0.00, 3.41],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 0.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.00, 0.00, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.0000, 0.0000, 3.4142],
+            "p2": [-0.7071, 0.0000, 2.7071],
+            "p3": [0.0000, 0.0000, 2.0000],
+            "color": [0, 255, 0],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.00, 0.00, 3.41],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.00, 0.00, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.71, 0.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.0000, 0.0000, 3.4142],
+            "p2": [0.0000, 0.0000, 2.0000],
+            "p3": [0.7071, 0.0000, 2.7071],
+            "color": [0, 255, 0],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 0.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 1.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.00, 1.00, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.7071, 0.0000, 2.7071],
+            "p2": [-0.7071, 1.0000, 2.7071],
+            "p3": [0.0000, 1.0000, 2.0000],
+            "color": [0, 255, 0],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 0.00, 2.71],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.00, 1.00, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.00, 0.00, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.7071, 0.0000, 2.7071],
+            "p2": [0.0000, 1.0000, 2.0000],
+            "p3": [0.0000, 0.0000, 2.0000],
+            "color": [0, 255, 0],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-1.25, 1.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-1.25, 2.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.33, 2.25, 2.38],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-1.2500, 1.2500, 2.0000],
+            "p2": [-1.2500, 2.2500, 2.0000],
+            "p3": [-0.3261, 2.2500, 2.3827],
+            "color": [0, 255, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-1.25, 1.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.33, 2.25, 2.38],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.33, 1.25, 2.38],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-1.2500, 1.2500, 2.0000],
+            "p2": [-0.3261, 2.2500, 2.3827],
+            "p3": [-0.3261, 1.2500, 2.3827],
+            "color": [0, 255, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.33, 1.25, 2.38],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.33, 2.25, 2.38],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 2.25, 3.31],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.3261, 1.2500, 2.3827],
+            "p2": [-0.3261, 2.2500, 2.3827],
+            "p3": [-0.7088, 2.2500, 3.3066],
+            "color": [0, 255, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.33, 1.25, 2.38],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 2.25, 3.31],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 1.25, 3.31],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.3261, 1.2500, 2.3827],
+            "p2": [-0.7088, 2.2500, 3.3066],
+            "p3": [-0.7088, 1.2500, 3.3066],
+            "color": [0, 255, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-1.25, 2.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-1.63, 2.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 2.25, 3.31],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-1.2500, 2.2500, 2.0000],
+            "p2": [-1.6327, 2.2500, 2.9239],
+            "p3": [-0.7088, 2.2500, 3.3066],
+            "color": [0, 255, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-1.25, 2.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 2.25, 3.31],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.33, 2.25, 2.38],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-1.2500, 2.2500, 2.0000],
+            "p2": [-0.7088, 2.2500, 3.3066],
+            "p3": [-0.3261, 2.2500, 2.3827],
+            "color": [0, 255, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 1.25, 3.31],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 2.25, 3.31],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-1.63, 2.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.7088, 1.2500, 3.3066],
+            "p2": [-0.7088, 2.2500, 3.3066],
+            "p3": [-1.6327, 2.2500, 2.9239],
+            "color": [0, 255, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 1.25, 3.31],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-1.63, 2.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-1.63, 1.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.7088, 1.2500, 3.3066],
+            "p2": [-1.6327, 2.2500, 2.9239],
+            "p3": [-1.6327, 1.2500, 2.9239],
+            "color": [0, 255, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 1.25, 3.31],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-1.63, 1.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-1.25, 1.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.7088, 1.2500, 3.3066],
+            "p2": [-1.6327, 1.2500, 2.9239],
+            "p3": [-1.2500, 1.2500, 2.0000],
+            "color": [0, 255, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.71, 1.25, 3.31],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-1.25, 1.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.33, 1.25, 2.38],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.7088, 1.2500, 3.3066],
+            "p2": [-1.2500, 1.2500, 2.0000],
+            "p3": [-0.3261, 1.2500, 2.3827],
+            "color": [0, 255, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-1.63, 1.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-1.63, 2.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-1.25, 2.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-1.6327, 1.2500, 2.9239],
+            "p2": [-1.6327, 2.2500, 2.9239],
+            "p3": [-1.2500, 2.2500, 2.0000],
+            "color": [0, 255, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-1.63, 1.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-1.25, 2.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-1.25, 1.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-1.6327, 1.2500, 2.9239],
+            "p2": [-1.2500, 2.2500, 2.0000],
+            "p3": [-1.2500, 1.2500, 2.0000],
+            "color": [0, 255, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [1.00, -1.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [1.00, -0.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.62, -0.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [1.0000, -1.2500, 2.0000],
+            "p2": [1.0000, -0.2500, 2.0000],
+            "p3": [0.6173, -0.2500, 2.9239],
+            "color": [255, 0, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [1.00, -1.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.62, -0.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.62, -1.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [1.0000, -1.2500, 2.0000],
+            "p2": [0.6173, -0.2500, 2.9239],
+            "p3": [0.6173, -1.2500, 2.9239],
+            "color": [255, 0, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [0.62, -1.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.62, -0.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.31, -0.25, 2.54],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [0.6173, -1.2500, 2.9239],
+            "p2": [0.6173, -0.2500, 2.9239],
+            "p3": [-0.3066, -0.2500, 2.5412],
+            "color": [255, 0, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [0.62, -1.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.31, -0.25, 2.54],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.31, -1.25, 2.54],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [0.6173, -1.2500, 2.9239],
+            "p2": [-0.3066, -0.2500, 2.5412],
+            "p3": [-0.3066, -1.2500, 2.5412],
+            "color": [255, 0, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [1.00, -0.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.08, -0.25, 1.62],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.31, -0.25, 2.54],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [1.0000, -0.2500, 2.0000],
+            "p2": [0.0761, -0.2500, 1.6173],
+            "p3": [-0.3066, -0.2500, 2.5412],
+            "color": [255, 0, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [1.00, -0.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.31, -0.25, 2.54],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.62, -0.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [1.0000, -0.2500, 2.0000],
+            "p2": [-0.3066, -0.2500, 2.5412],
+            "p3": [0.6173, -0.2500, 2.9239],
+            "color": [255, 0, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.31, -1.25, 2.54],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [-0.31, -0.25, 2.54],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.08, -0.25, 1.62],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.3066, -1.2500, 2.5412],
+            "p2": [-0.3066, -0.2500, 2.5412],
+            "p3": [0.0761, -0.2500, 1.6173],
+            "color": [255, 0, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.31, -1.25, 2.54],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.08, -0.25, 1.62],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.08, -1.25, 1.62],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.3066, -1.2500, 2.5412],
+            "p2": [0.0761, -0.2500, 1.6173],
+            "p3": [0.0761, -1.2500, 1.6173],
+            "color": [255, 0, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.31, -1.25, 2.54],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.08, -1.25, 1.62],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [1.00, -1.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.3066, -1.2500, 2.5412],
+            "p2": [0.0761, -1.2500, 1.6173],
+            "p3": [1.0000, -1.2500, 2.0000],
+            "color": [255, 0, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [-0.31, -1.25, 2.54],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [1.00, -1.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.62, -1.25, 2.92],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [-0.3066, -1.2500, 2.5412],
+            "p2": [1.0000, -1.2500, 2.0000],
+            "p3": [0.6173, -1.2500, 2.9239],
+            "color": [255, 0, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [0.08, -1.25, 1.62],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [0.08, -0.25, 1.62],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [1.00, -0.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [0.0761, -1.2500, 1.6173],
+            "p2": [0.0761, -0.2500, 1.6173],
+            "p3": [1.0000, -0.2500, 2.0000],
+            "color": [255, 0, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        },
+        {
+            "type": "sphere",
+            "center": [0.08, -1.25, 1.62],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [1.00, -0.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "sphere",
+            "center": [1.00, -1.25, 2.00],
+            "radius": 0.040000,
+            "color": [100, 200, 0],
+            "specular": 100,
+            "reflection": 0.5
+        },
+        {
+            "type": "triangle",
+            "p1": [0.0761, -1.2500, 1.6173],
+            "p2": [1.0000, -0.2500, 2.0000],
+            "p3": [1.0000, -1.2500, 2.0000],
+            "color": [255, 0, 255],
+            "specular": 100,
+            "reflection": 0.0000
+        } 
+    ],
+    "lights":[
+        {
+            "type": "ambient",
+            "intensity": 0.2
+        },
+        {
+            "type": "point",
+            "intensity": 0.6,
+            "position": [2, 1, 0]
+        },
+        {
+            "type": "directional",
+            "intensity": 0.2,
+            "direction": [1, 4, 4]
+        }
+    ],
+  "camera":{
+    "position": [0, 0, -3]
+  }
+,
+  "settings":{
+    "numberOfThreads": 8,
+    "subsampling": true
+  }
+}

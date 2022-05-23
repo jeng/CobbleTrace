@@ -68,12 +68,20 @@ struct scene_stack_t {
     };
 };
 
+struct settings_t {
+    int numberOfThreads;
+    bool subsampling;
+};
+
 struct scene_t {
     scene_stack_t lightStack;
     scene_stack_t objectStack;
     camera_t camera;
     viewport_t viewport;
+    settings_t settings;
 };
+
+
 
 void ParseSceneFile(char *filename, scene_t *scene);
 void InitSceneData(scene_t *scene);

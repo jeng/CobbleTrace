@@ -71,6 +71,8 @@ PushToken(FileBuffer *fb){
         fb->index--;
 }
 
+
+
 String
 GetString(FileBuffer *fb){
     String result;
@@ -101,6 +103,29 @@ GetString(FileBuffer *fb){
     return result;
 }
 
+bool
+GetBoolean(FileBuffer *fb){
+    bool result;
+    String s;
+    char d[10] = {0};
+    s.size = 0;
+    s.data = (char*)&d;
+    SkipSpace(fb);
+
+    while(fb->index < fb->size && s.size < 5 && 'a' <= fb->data[fb->index] && fb->data[fb->index] <= 'z'){
+        s.data[s.size++] = fb->data[fb->index++];
+    }
+
+    if (IsStringEqual(&s, "true"))
+        return true;
+    else if (IsStringEqual(&s, "false"))
+        return false;
+    else
+        assert(false);
+
+    return false;
+}
+
 void 
 InitSceneData(scene_t *scene){
     scene->lightStack.size = MAX_LIGHTS;
@@ -113,15 +138,20 @@ InitSceneData(scene_t *scene){
     scene->objectStack.objects = (scene_object_t*)calloc(MAX_OBJECTS, sizeof(scene_object_t));
     scene->objectStack.type = ST_OBJECT;
 
-    //scene_stack_t lightStack;
-    //scene_stack_t objectStack;
-    //camera_t camera;
-    //viewport_t viewport;
+    scene->settings.numberOfThreads = 8;
+    scene->settings.subsampling = true;
+
+    scene->camera.position = {0, 0, -8};
 }
 
 void
 AssertNextToken(FileBuffer *fb, char c){
     char x = GetToken(fb);
+    if (c != x){
+        char s[100];
+        sprintf(s, "expected %c got %c\n", c, x);
+        SDL_Log(s);
+    }
     assert(c == x);
 }
 
@@ -316,6 +346,33 @@ LoadCamera(FileBuffer *fb, scene_t *scene){
 }
 
 void
+LoadSettings(FileBuffer *fb, scene_t *scene){
+    String s;
+    AssertNextToken(fb, '{');
+
+    while(fb->index < fb->size){            
+        AssertNextToken(fb, '"');
+        PushToken(fb);
+        s = GetString(fb);
+        AssertNextToken(fb, ':');
+
+        if (IsStringEqual(&s, "numberOfThreads")){
+            scene->settings.numberOfThreads = GetNumber(fb);
+        } else if (IsStringEqual(&s, "subsampling")){
+            scene->settings.subsampling = GetBoolean(fb);
+        } else {
+            assert(false);
+        }
+
+        char c = GetToken(fb);
+        if (c == '}')
+            break;
+        PushToken(fb);
+        AssertNextToken(fb, ',');
+    }
+}
+
+void
 ParseSceneFile(char *filename, scene_t *scene){    
     FileBuffer fb;
     FILE *f = fopen(filename, "r");
@@ -346,6 +403,9 @@ ParseSceneFile(char *filename, scene_t *scene){
         } else if (IsStringEqual(&s, "camera")){
             AssertNextToken(&fb, ':');
             LoadCamera(&fb, scene);
+        } else if (IsStringEqual(&s, "settings")){
+            AssertNextToken(&fb, ':');
+            LoadSettings(&fb, scene);
         }
 
         char c = GetToken(&fb);

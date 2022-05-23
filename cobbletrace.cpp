@@ -13,20 +13,22 @@
 #define HEIGHT (640)
 #define EVENT_QUEUE_SIZE 1000
 
+void Help(){
+    SDL_Log("cobbletrace scenefile\n\n");
+    SDL_Log("To run cobbletrace provide a scene file.  See scene_file_1.json for an example.");
+    exit(0);
+}
 
 int main(int argc, char *argv[]){
 
     scene_t scene;
-    char s[1024];
-    sprintf(s, "argc %d\n", argc);
-    SDL_Log(s);
-
     
     //TODO load the default scene if we don't get a file
     if (argc > 1){
-        sprintf(s, "%s\n", argv[1]);
         InitSceneData(&scene);
         ParseSceneFile(argv[1], &scene);
+    } else {
+        Help();
     }
 
 

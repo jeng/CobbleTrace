@@ -84,5 +84,9 @@
     ],
     "camera":{
         "position": [0, 0, -8]
+    },
+    "settings":{
+        "numberOfThreads": 4,
+        "subsampling": false
     }
 }
