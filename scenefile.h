@@ -71,6 +71,7 @@ struct scene_stack_t {
 struct settings_t {
     int numberOfThreads;
     bool subsampling;
+    bool wireFrame;
 };
 
 struct scene_t {

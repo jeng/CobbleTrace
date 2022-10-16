@@ -87,6 +87,7 @@
     },
     "settings":{
         "numberOfThreads": 4,
-        "subsampling": false
+        "subsampling": false,
+        "wireFrame": false
     }
 }
