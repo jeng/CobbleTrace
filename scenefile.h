@@ -7,7 +7,7 @@
 
 #define MAX_OBJECTS 100000
 #define MAX_LIGHTS 100
-#define MAX_SCENEFILE (1<<20)
+#define MAX_SCENEFILE (1<<21)
 
 enum lightType_t {LT_POINT, LT_DIRECTIONAL, LT_AMBIENT};
 enum object_t {OT_SPHERE, OT_TRIANGLE};
