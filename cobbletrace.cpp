@@ -9,10 +9,13 @@
 #include "raythread.h"
 #include "scenefile.h"
 #include "rasterizeScene.h"
+#include "bvhTest.h"
 
 #define WIDTH  (640)
 #define HEIGHT (640)
 #define EVENT_QUEUE_SIZE 1000
+
+#define TEST_BVH (1)
 
 void Help(){
     SDL_Log("cobbletrace scenefile\n\n");
@@ -90,10 +93,14 @@ int main(int argc, char *argv[]){
             }
         }
 
+#if TEST_BVH
+        BvhTest(&env, &scene);
+#else
         RayThread(&env, &scene);
 
         if (scene.settings.wireFrame)
             RasterizeScene(&env, &scene);
+#endif        
 
         Blit(&env);
         SDL_Delay(33);
