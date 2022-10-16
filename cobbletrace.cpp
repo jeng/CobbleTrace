@@ -8,6 +8,7 @@
 #include "draw2d.h"
 #include "raythread.h"
 #include "scenefile.h"
+#include "rasterizeScene.h"
 
 #define WIDTH  (640)
 #define HEIGHT (640)
@@ -90,6 +91,10 @@ int main(int argc, char *argv[]){
         }
 
         RayThread(&env, &scene);
+
+        if (scene.settings.wireFrame)
+            RasterizeScene(&env, &scene);
+
         Blit(&env);
         SDL_Delay(33);
     }

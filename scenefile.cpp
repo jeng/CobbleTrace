@@ -360,6 +360,8 @@ LoadSettings(FileBuffer *fb, scene_t *scene){
             scene->settings.numberOfThreads = GetNumber(fb);
         } else if (IsStringEqual(&s, "subsampling")){
             scene->settings.subsampling = GetBoolean(fb);
+        } else if (IsStringEqual(&s, "wireFrame")){
+            scene->settings.wireFrame = GetBoolean(fb);
         } else {
             assert(false);
         }
