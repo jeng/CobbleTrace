@@ -82,7 +82,11 @@ struct scene_t {
     settings_t settings;
 };
 
-
+struct ray_t {
+    v3_t origin;
+    v3_t direction;
+    float t;
+};
 
 void ParseSceneFile(char *filename, scene_t *scene);
 void InitSceneData(scene_t *scene);

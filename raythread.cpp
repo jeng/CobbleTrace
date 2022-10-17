@@ -87,7 +87,7 @@ static display_partition_t **displayPart;
 // side of the triangle
 
 static bool
-IntersectRayTriangle(v3_t origin, v3_t direction, triangle_t triangle, float *t, float *u, float *v){
+IntersectRayTriangle(ray_t ray, triangle_t triangle, float *t, float *u, float *v){
     float epsilon = 0.000001;
     v3_t v0v1 = triangle.p2 - triangle.p1;
     v3_t v0v2 = triangle.p3 - triangle.p1;
@@ -101,7 +101,7 @@ IntersectRayTriangle(v3_t origin, v3_t direction, triangle_t triangle, float *t,
     //
     // ===============> (plane)
 
-    float NDotRayDir = DotProduct(n,direction);
+    float NDotRayDir = DotProduct(n, ray.direction);
     if (fabs(NDotRayDir) < epsilon)
         return false;
 
@@ -111,7 +111,7 @@ IntersectRayTriangle(v3_t origin, v3_t direction, triangle_t triangle, float *t,
     //Compute T, this is the point where the ray hits the plane
     //This video from UC Davis explains this equation
     //https://www.youtube.com/watch?v=Ahp6LDQnK4Y  @ 16:14
-    *t = -(d + DotProduct(n, origin)) / NDotRayDir;
+    *t = -(d + DotProduct(n, ray.origin)) / NDotRayDir;
 
     //If the triangle is behind
     if (t < 0) 
@@ -119,7 +119,7 @@ IntersectRayTriangle(v3_t origin, v3_t direction, triangle_t triangle, float *t,
 
     //This is just the standard find a point along the ray
     //Since we solved for t we can get the point
-    v3_t p = origin + *t * direction;
+    v3_t p = ray.origin + *t * ray.direction;
 
     //Inside out test
     v3_t c; //vector perpendicular to the triangles plane  (Would this be the normal from above?)
@@ -154,11 +154,11 @@ IntersectRayTriangle(v3_t origin, v3_t direction, triangle_t triangle, float *t,
 }
  
 static void
-IntersectRaySphere(v3_t origin, v3_t direction, sphere_t sphere, float *t1, float *t2){
+IntersectRaySphere(ray_t ray, sphere_t sphere, float *t1, float *t2){
     float r = sphere.radius;
-    v3_t co = origin - sphere.center;
-    float a = DotProduct(direction, direction);
-    float b = 2 * DotProduct(co, direction);
+    v3_t co = ray.origin - sphere.center;
+    float a = DotProduct(ray.direction, ray.direction);
+    float b = 2 * DotProduct(co, ray.direction);
     float c = DotProduct(co, co) - (r * r);
     float discriminant = b*b - 4*a*c;
 
@@ -193,7 +193,7 @@ CanvasToViewport(bitmapSettings_t *bitmap, viewport_t viewport, v2_t position){
 
 //TODO too many parameters.  Clean this up
 static bool
-ClosestIntersection(v3_t origin, v3_t direction, 
+ClosestIntersection(ray_t ray,
     float tmin, float tmax, 
     float *tclosest, scene_object_t *closestScene,
     scene_t *scene){
@@ -207,7 +207,7 @@ ClosestIntersection(v3_t origin, v3_t direction,
         switch(workingObject.type){
             case OT_SPHERE: {
                 float t1, t2;
-                IntersectRaySphere(origin, direction, workingObject.sphere, &t1, &t2); 
+                IntersectRaySphere(ray, workingObject.sphere, &t1, &t2); 
                 if(tmin <= t1 && t1 <= tmax && t1 <= *tclosest){
                     *tclosest = t1;
                     *closestScene = workingObject;
@@ -226,7 +226,7 @@ ClosestIntersection(v3_t origin, v3_t direction,
             {
                 static int set = 0;
                 float t, u, v;
-                bool hit = IntersectRayTriangle(origin, direction, workingObject.triangle, &t, &u, &v);
+                bool hit = IntersectRayTriangle(ray, workingObject.triangle, &t, &u, &v);
                  if(hit && tmin <= t && t <= tmax && t <= *tclosest){
                     *tclosest = t;
                     *closestScene = workingObject;
@@ -274,7 +274,7 @@ ComputeLighting(v3_t position, v3_t normal, v3_t viewVector, scene_t *scene, int
             scene_object_t closestScene;
             float tclosest;
             bool shadowFound = 
-                ClosestIntersection(position, lightRay, 0.001, tMax, &tclosest, &closestScene, scene);
+                ClosestIntersection({position, lightRay, 0}, 0.001, tMax, &tclosest, &closestScene, scene);
 
             if (shadowFound)
                 continue;
@@ -324,26 +324,26 @@ NormalOfSceneObject(scene_object_t *sceneObject, v3_t position, v3_t direction){
 
 
 static uint32_t
-TraceRay(v3_t origin, v3_t direction, float tmin, float tmax, int recursionDepth, scene_t *scene){
+TraceRay(ray_t ray, float tmin, float tmax, int recursionDepth, scene_t *scene){
 
     float tclosest;
     scene_object_t closestScene;
-    bool found = ClosestIntersection(origin, direction, tmin, tmax, &tclosest, &closestScene, scene);
+    bool found = ClosestIntersection(ray, tmin, tmax, &tclosest, &closestScene, scene);
     if (found){
-        v3_t position = origin + tclosest * direction;
-        v3_t normal = NormalOfSceneObject(&closestScene, position, direction);
+        v3_t position = ray.origin + tclosest * ray.direction;
+        v3_t normal = NormalOfSceneObject(&closestScene, position, ray.direction);
         hsv_t hsv = ColorToHsv(closestScene.material.color);
         //TODO environment that controls the actions for the current scene, (reflection, shadow, specular, ...)
         if (1){
-            hsv.v = ComputeLighting(position, normal, -direction, scene, closestScene.material.specular);
+            hsv.v = ComputeLighting(position, normal, -ray.direction, scene, closestScene.material.specular);
             uint32_t localColor = HsvToColor(hsv);
         
             float reflection = closestScene.material.reflection;            
             if (recursionDepth <= 0 || reflection <= 0)
                 return localColor;
 
-            v3_t reflectedRay = ReflectRay(-direction, normal);
-            uint32_t reflectedColor = TraceRay(position, reflectedRay, 0.001, FINF, recursionDepth - 1, scene);
+            v3_t reflectedRay = ReflectRay(-ray.direction, normal);
+            uint32_t reflectedColor = TraceRay({position, reflectedRay, 0}, 0.001, FINF, recursionDepth - 1, scene);
 
             v3_t localColorVec = ColorToRgbV3(localColor);
             v3_t reflectedColorVec = ColorToRgbV3(reflectedColor);
@@ -422,7 +422,7 @@ int RayTracePatition(void *data) {
             uint32_t lastColor = 0; 
             for(int y = partition->yStart; y < partition->yEnd;){ 
                 v3_t direction = CanvasToViewport(bitmap, vp, {(float)x, (float)y}) * scene->camera.rotation;
-                uint32_t color = TraceRay(scene->camera.position, direction, 1, FINF, 10, scene);
+                uint32_t color = TraceRay({scene->camera.position, direction, 0}, 1, FINF, 10, scene);
                 CanvasPutPixel(bitmap, {(float)x, (float)y}, color);
 
                 if (scene->settings.subsampling){
@@ -553,4 +553,3 @@ RayThread(environment_t *env, scene_t *scene){
 
     return true;
 }
-

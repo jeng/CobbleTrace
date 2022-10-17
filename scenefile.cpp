@@ -150,7 +150,7 @@ AssertNextToken(FileBuffer *fb, char c){
     if (c != x){
         char s[100];
         sprintf(s, "expected %c got %c\n", c, x);
-        SDL_Log(s);
+        SDL_Log("%s", s);
     }
     assert(c == x);
 }

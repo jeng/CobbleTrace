@@ -48,7 +48,7 @@ int main(int argc, char *argv[]){
 
     if (window == NULL){
         //TODO This would need to be in the platform level and generate an error popup
-        SDL_Log("Could not open create window %s\n");
+        SDL_Log("Could not create window\n");
         exit(1);
     }
     SDL_SetWindowTitle(window, "Cobble Trace");
