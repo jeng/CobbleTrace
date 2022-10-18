@@ -74,6 +74,19 @@ int main(int argc, char *argv[]){
     env.events.capacity = EVENT_QUEUE_SIZE;
     env.events.queue = (event_t*)calloc(env.events.capacity, sizeof(event_t));
 
+#if TEST_BVH
+
+    uint32_t startTicks = SDL_GetTicks();
+    SDL_Log("Stating at %d", startTicks);
+    BvhTest(&env, &scene);
+    uint32_t endTicks = SDL_GetTicks();
+    SDL_Log("Ending at %d", endTicks);
+
+    uint32_t total = endTicks - startTicks;
+    SDL_Log("Total time %dms %fs", total, total/1000.0);
+
+#endif
+
     SDL_Event e;
     bool running = true;
     while(running){
@@ -93,17 +106,17 @@ int main(int argc, char *argv[]){
             }
         }
 
-#if TEST_BVH
-        BvhTest(&env, &scene);
-#else
+#if TEST_BVH == 0
         RayThread(&env, &scene);
 
         if (scene.settings.wireFrame)
             RasterizeScene(&env, &scene);
+
 #endif        
 
         Blit(&env);
         SDL_Delay(33);
+
     }
 
     SDL_DestroyWindow(window);

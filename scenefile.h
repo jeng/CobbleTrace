@@ -35,6 +35,7 @@ struct triangle_t {
     v3_t p1;
     v3_t p2;
     v3_t p3;
+    v3_t centroid;
 };
 
 struct scene_object_t {

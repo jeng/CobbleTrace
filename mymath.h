@@ -2,6 +2,7 @@
 #define __MYMATH_H__
 
 #include <math.h>
+#include <assert.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -175,6 +176,18 @@ operator/(v3_t A, v3_t B) {
     return(Result);
 }
 
+inline float
+V3ByIndex(v3_t a, int index){
+    switch(index){
+        case 0: return a.x;
+        case 1: return a.y;
+        case 2: return a.z;
+        default:
+            assert(0);
+            return 0;
+    }
+}
+
 inline v3_t
 Lerp(v3_t A, float t, v3_t B) {
     v3_t Result = (1.0f - t)*A + t*B;
@@ -230,6 +243,16 @@ CrossProduct(v3_t a, v3_t b){
 
 inline double Inner(v2_t v, v2_t w){
     return v.x * w.x + v.y * w.y;
+}
+
+inline v3_t
+MinV3(v3_t a, v3_t b){
+    return {min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)};
+}
+
+inline v3_t
+MaxV3(v3_t a, v3_t b){
+    return {max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)};
 }
 
 #endif /*__MATH_H__*/
