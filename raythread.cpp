@@ -53,6 +53,7 @@
 #include "color.h"
 #include "scenefile.h"
 #include "SDL.h"
+#include "bvh.h"
 
 const float FINF = 4294967296.0;
 const uint32_t BACKGROUND_COLOR = RgbToColor(0x33, 0x33, 0x33);
@@ -73,6 +74,7 @@ struct display_partition_t{
     scene_t *scene;    
     worker_status_t status;
     SDL_Thread *thread;
+    bvh_state_t *bvhState;
 };
 
 static display_partition_t **displayPart;
@@ -196,47 +198,71 @@ static bool
 ClosestIntersection(ray_t ray,
     float tmin, float tmax, 
     float *tclosest, scene_object_t *closestScene,
-    scene_t *scene){
+    scene_t *scene,
+    bvh_state_t *bvhState){
 
     *tclosest = FINF;
+    uint32_t closestIndex = 0;
 
-    bool found = false;
-    scene_object_t workingObject;
-    for(int i = 0; i < scene->objectStack.index; i++){
-        workingObject = scene->objectStack.objects[i];
-        switch(workingObject.type){
-            case OT_SPHERE: {
-                float t1, t2;
-                IntersectRaySphere(ray, workingObject.sphere, &t1, &t2); 
-                if(tmin <= t1 && t1 <= tmax && t1 <= *tclosest){
-                    *tclosest = t1;
-                    *closestScene = workingObject;
-                    found = true;
-                }
+    IntersectBVHClosest(&ray, bvhState->rootNodeIdx, bvhState, tclosest, &closestIndex);
+    //TODO add sphere's to the bvh
+    //TODO clean up the object management.  I going to need these triangles
+    //indexed by object type so I don't have to loop over them
+    *closestScene = scene->objectStack.objects[scene->triangleLookup.indexes[closestIndex]];
+    //scene_object_t workingObject;
+    //int triangleCount = 0;
+    //if(ray.t != 1e30f){
+    //    for(int i = 0; i < scene->objectStack.index; i++){
+    //        workingObject = scene->objectStack.objects[i];
+    //        if(workingObject.type == OT_TRIANGLE){
+    //            if (triangleCount++ == closestIndex){
+    //                *closestScene = workingObject;
+    //                break;
+    //            }
+    //        }
+    //    }
+    //}
+    
+    return (ray.t != 1e30f);
 
-                if(tmin <= t2 && t2 <= tmax && t2 <= *tclosest){
-                    *tclosest = t2;
-                    *closestScene = workingObject;
-                    found = true;
-                }
 
-                break; 
-            } 
-            case OT_TRIANGLE: 
-            {
-                static int set = 0;
-                float t, u, v;
-                bool hit = IntersectRayTriangle(ray, workingObject.triangle, &t, &u, &v);
-                 if(hit && tmin <= t && t <= tmax && t <= *tclosest){
-                    *tclosest = t;
-                    *closestScene = workingObject;
-                    found = true;
-                }
-                break;
-            }
-        }
-    }
-    return found;
+    //bool found = false;
+    //scene_object_t workingObject;
+    //for(int i = 0; i < scene->objectStack.index; i++){
+    //    workingObject = scene->objectStack.objects[i];
+    //    switch(workingObject.type){
+    //        case OT_SPHERE: {
+    //            float t1, t2;
+    //            IntersectRaySphere(ray, workingObject.sphere, &t1, &t2); 
+    //            if(tmin <= t1 && t1 <= tmax && t1 <= *tclosest){
+    //                *tclosest = t1;
+    //                *closestScene = workingObject;
+    //                found = true;
+    //            }
+
+    //            if(tmin <= t2 && t2 <= tmax && t2 <= *tclosest){
+    //                *tclosest = t2;
+    //                *closestScene = workingObject;
+    //                found = true;
+    //            }
+
+    //            break; 
+    //        } 
+    //        case OT_TRIANGLE: 
+    //        {
+    //            static int set = 0;
+    //            float t, u, v;
+    //            bool hit = IntersectRayTriangle(ray, workingObject.triangle, &t, &u, &v);
+    //             if(hit && tmin <= t && t <= tmax && t <= *tclosest){
+    //                *tclosest = t;
+    //                *closestScene = workingObject;
+    //                found = true;
+    //            }
+    //            break;
+    //        }
+    //    }
+    //}
+    //return found;
 }
 
 //Return vector R reflected as -R in relation to the normal
@@ -246,7 +272,7 @@ ReflectRay(v3_t ray, v3_t normal) {
 }
 
 static float
-ComputeLighting(v3_t position, v3_t normal, v3_t viewVector, scene_t *scene, int specular){
+ComputeLighting(v3_t position, v3_t normal, v3_t viewVector, scene_t *scene, int specular, bvh_state_t *bvhState){
     float intensity = 0.0;
     for(int i = 0; i < scene->lightStack.index; i++){
         light_t light = scene->lightStack.lights[i];
@@ -274,7 +300,7 @@ ComputeLighting(v3_t position, v3_t normal, v3_t viewVector, scene_t *scene, int
             scene_object_t closestScene;
             float tclosest;
             bool shadowFound = 
-                ClosestIntersection({position, lightRay, 0}, 0.001, tMax, &tclosest, &closestScene, scene);
+                ClosestIntersection({position, lightRay, 1e30f}, 0.001, tMax, &tclosest, &closestScene, scene, bvhState);
 
             if (shadowFound)
                 continue;
@@ -324,18 +350,18 @@ NormalOfSceneObject(scene_object_t *sceneObject, v3_t position, v3_t direction){
 
 
 static uint32_t
-TraceRay(ray_t ray, float tmin, float tmax, int recursionDepth, scene_t *scene){
+TraceRay(ray_t ray, float tmin, float tmax, int recursionDepth, scene_t *scene, bvh_state_t *bvhState){
 
     float tclosest;
     scene_object_t closestScene;
-    bool found = ClosestIntersection(ray, tmin, tmax, &tclosest, &closestScene, scene);
+    bool found = ClosestIntersection(ray, tmin, tmax, &tclosest, &closestScene, scene, bvhState);
     if (found){
         v3_t position = ray.origin + tclosest * ray.direction;
         v3_t normal = NormalOfSceneObject(&closestScene, position, ray.direction);
         hsv_t hsv = ColorToHsv(closestScene.material.color);
         //TODO environment that controls the actions for the current scene, (reflection, shadow, specular, ...)
         if (1){
-            hsv.v = ComputeLighting(position, normal, -ray.direction, scene, closestScene.material.specular);
+            hsv.v = ComputeLighting(position, normal, -ray.direction, scene, closestScene.material.specular, bvhState);
             uint32_t localColor = HsvToColor(hsv);
         
             float reflection = closestScene.material.reflection;            
@@ -343,7 +369,7 @@ TraceRay(ray_t ray, float tmin, float tmax, int recursionDepth, scene_t *scene){
                 return localColor;
 
             v3_t reflectedRay = ReflectRay(-ray.direction, normal);
-            uint32_t reflectedColor = TraceRay({position, reflectedRay, 0}, 0.001, FINF, recursionDepth - 1, scene);
+            uint32_t reflectedColor = TraceRay({position, reflectedRay, 0}, 0.001, FINF, recursionDepth - 1, scene, bvhState);
 
             v3_t localColorVec = ColorToRgbV3(localColor);
             v3_t reflectedColorVec = ColorToRgbV3(reflectedColor);
@@ -413,6 +439,7 @@ int RayTracePatition(void *data) {
         bitmapSettings_t *bitmap = partition->env->bitmap;
         viewport_t vp = partition->viewport;
         scene_t *scene = partition->scene;
+        bvh_state_t *bvhState = partition->bvhState;
 
         partition->status = WS_RUNNING;
 
@@ -422,7 +449,7 @@ int RayTracePatition(void *data) {
             uint32_t lastColor = 0; 
             for(int y = partition->yStart; y < partition->yEnd;){ 
                 v3_t direction = CanvasToViewport(bitmap, vp, {(float)x, (float)y}) * scene->camera.rotation;
-                uint32_t color = TraceRay({scene->camera.position, direction, 0}, 1, FINF, 10, scene);
+                uint32_t color = TraceRay({scene->camera.position, direction, 1e30f}, 1, FINF, 10, scene, bvhState);
                 CanvasPutPixel(bitmap, {(float)x, (float)y}, color);
 
                 if (scene->settings.subsampling){
@@ -460,7 +487,7 @@ int RayTracePatition(void *data) {
 
 
 static void
-RayTrace(environment_t *env, scene_t *scene){
+HandleUpdates(environment_t *env, scene_t *scene, bvh_state_t *bvhState){
     static bool changesMade = true;
     static float yaw = 0;
     static float pitch = 0;
@@ -497,7 +524,8 @@ RayTrace(environment_t *env, scene_t *scene){
         displayPart[i]->yEnd     = yStart+yStep;
         displayPart[i]->env      = env;
         displayPart[i]->viewport = vp;
-        displayPart[i]->scene   = scene;
+        displayPart[i]->scene    = scene;
+        displayPart[i]->bvhState = bvhState;
         displayPart[i]->status   = WS_READY;
 
         yStart += yStep;
@@ -532,12 +560,39 @@ AllocatePartitions(scene_t *scene){
     }
 }
 
+//TODO(JHE) make an object stack I can work with instead of calling calloc here
+triangle_t *
+GetSceneTriangles(scene_t *scene, uint32_t *size){
+    *size = 0;
+    for(int i = 0; i < scene->objectStack.index; i++){
+        scene_object_t workingObject = scene->objectStack.objects[i];
+        if (workingObject.type == OT_TRIANGLE){
+            (*size)++;
+        }
+    }
+    triangle_t *triangles = (triangle_t*)calloc(*size, sizeof(triangle_t));
+    int n = 0;
+    for(int i = 0; i < scene->objectStack.index; i++){
+        scene_object_t workingObject = scene->objectStack.objects[i];
+        if (workingObject.type == OT_TRIANGLE){
+            triangles[n++] = workingObject.triangle;
+        }
+    }
+    return triangles;
+ }
+
 bool
 RayThread(environment_t *env, scene_t *scene){
     static bool initialized = false;
+    static bvh_state_t bvhState;
+    static triangle_t *triangles;
 
     if (!initialized){
         AllocatePartitions(scene);
+        uint32_t size;
+        triangle_t *triangles = GetSceneTriangles(scene, &size);
+        bvhState = InitializeBVHState(triangles, size);
+        BuildBVH(&bvhState);
         initialized = true;
     }
 
@@ -549,7 +604,7 @@ RayThread(environment_t *env, scene_t *scene){
     }
 
     if (complete)
-        RayTrace(env, scene);
+        HandleUpdates(env, scene, &bvhState);
 
     return true;
 }

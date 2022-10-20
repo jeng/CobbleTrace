@@ -54,7 +54,8 @@ v3_t twentysixcell[NUM_CELLS] =
 void WriteSettings(){
     printf("  \"settings\":{\n");
     printf("    \"numberOfThreads\": 8,\n");
-    printf("    \"subsampling\": true\n");
+    printf("    \"subsampling\": true,\n");
+    printf("    \"wireFrame\": false\n");
     printf("  }\n");
 }
 
@@ -396,7 +397,7 @@ int main(){
     tri.p2 = { 500, -500, 4.5};
     tri.p3 = {   0,  500, 4.5};
     Rule1Init();
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < 150; i++){
         CellWalk();
         CopyBuffer();
     }

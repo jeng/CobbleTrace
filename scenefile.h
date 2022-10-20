@@ -7,7 +7,7 @@
 
 #define MAX_OBJECTS 100000
 #define MAX_LIGHTS 100
-#define MAX_SCENEFILE (1<<21)
+#define MAX_SCENEFILE (1<<22)
 
 enum lightType_t {LT_POINT, LT_DIRECTIONAL, LT_AMBIENT};
 enum object_t {OT_SPHERE, OT_TRIANGLE};
@@ -75,9 +75,15 @@ struct settings_t {
     bool wireFrame;
 };
 
+struct scene_triangle_lookup_t {
+    uint32_t triangleCount;
+    uint32_t *indexes;
+};
+
 struct scene_t {
     scene_stack_t lightStack;
     scene_stack_t objectStack;
+    scene_triangle_lookup_t triangleLookup;
     camera_t camera;
     viewport_t viewport;
     settings_t settings;

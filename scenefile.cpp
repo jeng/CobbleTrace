@@ -213,6 +213,9 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
     String s;
 
     AssertNextToken(fb, '[');
+    
+    int triangleCount = 0;
+
     while(fb->index < fb->size){
 
         AssertNextToken(fb, '{');
@@ -229,6 +232,7 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
                     obj.type = OT_SPHERE;                    
                 } else if (IsStringEqual(&s, "triangle")){
                     obj.type = OT_TRIANGLE;
+                    triangleCount++;
                 } else {
                     assert(false);
                 }
@@ -261,6 +265,7 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
         //Push the object on the stack
         assert(scene->objectStack.index < scene->objectStack.size);
         SDL_memcpy(&scene->objectStack.objects[scene->objectStack.index++], &obj, sizeof(obj));
+        scene->triangleLookup.triangleCount += triangleCount;
         
         //Are we at the end of the list?
         char c = GetToken(fb);
@@ -374,6 +379,16 @@ LoadSettings(FileBuffer *fb, scene_t *scene){
     }
 }
 
+void MakeTriangleLookup(scene_t *scene){
+    scene->triangleLookup.indexes = (uint32_t*)calloc(scene->triangleLookup.triangleCount, sizeof(uint32_t));
+    int n = 0;
+    for(int i = 0; i < scene->objectStack.index; i++){
+        if(scene->objectStack.objects[i].type == OT_TRIANGLE){
+            scene->triangleLookup.indexes[n++] = i;
+        }
+    }
+}
+
 void
 ParseSceneFile(char *filename, scene_t *scene){    
     FileBuffer fb;
@@ -390,6 +405,8 @@ ParseSceneFile(char *filename, scene_t *scene){
     AssertNextToken(&fb, '{');
 
     String s;
+
+    scene->triangleLookup.triangleCount = 0;
 
     while(fb.index < fb.size){
         AssertNextToken(&fb, '"');
@@ -417,6 +434,8 @@ ParseSceneFile(char *filename, scene_t *scene){
         PushToken(&fb);
         AssertNextToken(&fb, ',');
     }
+
+    MakeTriangleLookup(scene);
             
-    free(fb.data);    
+    free(fb.data);
 }

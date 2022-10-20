@@ -9,13 +9,13 @@
 #include "raythread.h"
 #include "scenefile.h"
 #include "rasterizeScene.h"
-#include "bvhTest.h"
+#include "bvh.h"
 
 #define WIDTH  (640)
 #define HEIGHT (640)
 #define EVENT_QUEUE_SIZE 1000
 
-#define TEST_BVH (1)
+#define TEST_BVH (0)
 
 void Help(){
     SDL_Log("cobbletrace scenefile\n\n");
