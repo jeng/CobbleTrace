@@ -7,7 +7,7 @@
 
 #define MAX_OBJECTS 100000
 #define MAX_LIGHTS 100
-#define MAX_SCENEFILE (1<<21)
+#define MAX_SCENEFILE (1<<22)
 
 enum lightType_t {LT_POINT, LT_DIRECTIONAL, LT_AMBIENT};
 enum object_t {OT_SPHERE, OT_TRIANGLE};
@@ -35,6 +35,7 @@ struct triangle_t {
     v3_t p1;
     v3_t p2;
     v3_t p3;
+    v3_t centroid;
 };
 
 struct scene_object_t {
@@ -71,18 +72,29 @@ struct scene_stack_t {
 struct settings_t {
     int numberOfThreads;
     bool subsampling;
-    bool wireFrame;
+    bool wireframe;
+    bool supersampling;
+};
+
+struct scene_triangle_lookup_t {
+    uint32_t triangleCount;
+    uint32_t *indexes;
 };
 
 struct scene_t {
     scene_stack_t lightStack;
     scene_stack_t objectStack;
+    scene_triangle_lookup_t triangleLookup;
     camera_t camera;
     viewport_t viewport;
     settings_t settings;
 };
 
-
+struct ray_t {
+    v3_t origin;
+    v3_t direction;
+    float t;
+};
 
 void ParseSceneFile(char *filename, scene_t *scene);
 void InitSceneData(scene_t *scene);

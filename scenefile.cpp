@@ -140,6 +140,8 @@ InitSceneData(scene_t *scene){
 
     scene->settings.numberOfThreads = 8;
     scene->settings.subsampling = true;
+    scene->settings.wireframe = false;
+    scene->settings.supersampling = false;
 
     scene->camera.position = {0, 0, -8};
 }
@@ -150,7 +152,7 @@ AssertNextToken(FileBuffer *fb, char c){
     if (c != x){
         char s[100];
         sprintf(s, "expected %c got %c\n", c, x);
-        SDL_Log(s);
+        SDL_Log("%s", s);
     }
     assert(c == x);
 }
@@ -213,6 +215,9 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
     String s;
 
     AssertNextToken(fb, '[');
+    
+    int triangleCount = 0;
+
     while(fb->index < fb->size){
 
         AssertNextToken(fb, '{');
@@ -229,6 +234,7 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
                     obj.type = OT_SPHERE;                    
                 } else if (IsStringEqual(&s, "triangle")){
                     obj.type = OT_TRIANGLE;
+                    triangleCount++;
                 } else {
                     assert(false);
                 }
@@ -261,6 +267,7 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
         //Push the object on the stack
         assert(scene->objectStack.index < scene->objectStack.size);
         SDL_memcpy(&scene->objectStack.objects[scene->objectStack.index++], &obj, sizeof(obj));
+        scene->triangleLookup.triangleCount += triangleCount;
         
         //Are we at the end of the list?
         char c = GetToken(fb);
@@ -360,8 +367,10 @@ LoadSettings(FileBuffer *fb, scene_t *scene){
             scene->settings.numberOfThreads = GetNumber(fb);
         } else if (IsStringEqual(&s, "subsampling")){
             scene->settings.subsampling = GetBoolean(fb);
-        } else if (IsStringEqual(&s, "wireFrame")){
-            scene->settings.wireFrame = GetBoolean(fb);
+        } else if (IsStringEqual(&s, "wireframe")){
+            scene->settings.wireframe = GetBoolean(fb);
+        } else if (IsStringEqual(&s, "supersampling")){
+            scene->settings.supersampling = GetBoolean(fb);
         } else {
             assert(false);
         }
@@ -371,6 +380,16 @@ LoadSettings(FileBuffer *fb, scene_t *scene){
             break;
         PushToken(fb);
         AssertNextToken(fb, ',');
+    }
+}
+
+void MakeTriangleLookup(scene_t *scene){
+    scene->triangleLookup.indexes = (uint32_t*)calloc(scene->triangleLookup.triangleCount, sizeof(uint32_t));
+    int n = 0;
+    for(int i = 0; i < scene->objectStack.index; i++){
+        if(scene->objectStack.objects[i].type == OT_TRIANGLE){
+            scene->triangleLookup.indexes[n++] = i;
+        }
     }
 }
 
@@ -390,6 +409,8 @@ ParseSceneFile(char *filename, scene_t *scene){
     AssertNextToken(&fb, '{');
 
     String s;
+
+    scene->triangleLookup.triangleCount = 0;
 
     while(fb.index < fb.size){
         AssertNextToken(&fb, '"');
@@ -417,6 +438,8 @@ ParseSceneFile(char *filename, scene_t *scene){
         PushToken(&fb);
         AssertNextToken(&fb, ',');
     }
+
+    MakeTriangleLookup(scene);
             
-    free(fb.data);    
+    free(fb.data);
 }

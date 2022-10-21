@@ -9,10 +9,13 @@
 #include "raythread.h"
 #include "scenefile.h"
 #include "rasterizeScene.h"
+#include "bvh.h"
 
 #define WIDTH  (640)
 #define HEIGHT (640)
 #define EVENT_QUEUE_SIZE 1000
+
+#define TEST_BVH (0)
 
 void Help(){
     SDL_Log("cobbletrace scenefile\n\n");
@@ -45,7 +48,7 @@ int main(int argc, char *argv[]){
 
     if (window == NULL){
         //TODO This would need to be in the platform level and generate an error popup
-        SDL_Log("Could not open create window %s\n");
+        SDL_Log("Could not create window\n");
         exit(1);
     }
     SDL_SetWindowTitle(window, "Cobble Trace");
@@ -71,6 +74,19 @@ int main(int argc, char *argv[]){
     env.events.capacity = EVENT_QUEUE_SIZE;
     env.events.queue = (event_t*)calloc(env.events.capacity, sizeof(event_t));
 
+#if TEST_BVH
+
+    uint32_t startTicks = SDL_GetTicks();
+    SDL_Log("Stating at %d", startTicks);
+    BvhTest(&env, &scene);
+    uint32_t endTicks = SDL_GetTicks();
+    SDL_Log("Ending at %d", endTicks);
+
+    uint32_t total = endTicks - startTicks;
+    SDL_Log("Total time %dms %fs", total, total/1000.0);
+
+#endif
+
     SDL_Event e;
     bool running = true;
     while(running){
@@ -90,13 +106,17 @@ int main(int argc, char *argv[]){
             }
         }
 
-        RayThread(&env, &scene);
+#if TEST_BVH == 0
 
-        if (scene.settings.wireFrame)
+        if (scene.settings.wireframe)
             RasterizeScene(&env, &scene);
+        else
+            RayThread(&env, &scene);
+#endif        
 
         Blit(&env);
         SDL_Delay(33);
+
     }
 
     SDL_DestroyWindow(window);

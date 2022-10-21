@@ -86,8 +86,8 @@
         "position": [0, 0, -8]
     },
     "settings":{
-        "numberOfThreads": 4,
+        "numberOfThreads": 16,
         "subsampling": false,
-        "wireFrame": false
+        "wireFrame": true
     }
 }
