@@ -140,6 +140,8 @@ InitSceneData(scene_t *scene){
 
     scene->settings.numberOfThreads = 8;
     scene->settings.subsampling = true;
+    scene->settings.wireframe = false;
+    scene->settings.supersampling = false;
 
     scene->camera.position = {0, 0, -8};
 }
@@ -365,8 +367,10 @@ LoadSettings(FileBuffer *fb, scene_t *scene){
             scene->settings.numberOfThreads = GetNumber(fb);
         } else if (IsStringEqual(&s, "subsampling")){
             scene->settings.subsampling = GetBoolean(fb);
-        } else if (IsStringEqual(&s, "wireFrame")){
-            scene->settings.wireFrame = GetBoolean(fb);
+        } else if (IsStringEqual(&s, "wireframe")){
+            scene->settings.wireframe = GetBoolean(fb);
+        } else if (IsStringEqual(&s, "supersampling")){
+            scene->settings.supersampling = GetBoolean(fb);
         } else {
             assert(false);
         }

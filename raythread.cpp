@@ -444,12 +444,63 @@ int RayTracePatition(void *data) {
         partition->status = WS_RUNNING;
 
         //Keep it square
+        //TODO why am I doing this?
         float width = bitmap->height/2;
         for (int x = -width; x < width; x++){
             uint32_t lastColor = 0; 
             for(int y = partition->yStart; y < partition->yEnd;){ 
-                v3_t direction = CanvasToViewport(bitmap, vp, {(float)x, (float)y}) * scene->camera.rotation;
-                uint32_t color = TraceRay({scene->camera.position, direction, 1e30f}, 1, FINF, 10, scene, bvhState);
+
+                uint32_t color = 0;
+                if (scene->settings.supersampling){
+                    const int samples = 4;
+                    float denom = samples * 2;
+                    float stepsize = 1/(float)samples;
+                    float jitter = stepsize/8;
+                    float sampleX = (float)x;
+                    bool first = true;
+                    for (int xs = 0; xs < samples; xs++){
+                        float sampleY = (float)y;
+                        for(int ys = 0; ys < samples; ys++){
+                            float rx = (float)rand() / (float)RAND_MAX;
+                            float ry = (float)rand() / (float)RAND_MAX;
+
+                            rx = (rx * (2 * jitter)) - jitter;
+                            ry = (ry * (2 * jitter)) - jitter;
+
+                            sampleX += rx;
+                            sampleY += ry;
+
+                            v3_t direction = CanvasToViewport(bitmap, vp, {(float)sampleX, (float)sampleY}) * scene->camera.rotation;
+                            uint32_t tempColor = TraceRay({scene->camera.position, direction, 1e30f}, 1, FINF, 10, scene, bvhState);
+
+                            if (first){
+                                first = false;
+                                color = tempColor;
+                            } else {
+                                rgb_t rgb = ColorToRgb(color);
+                                rgb_t tempRgb = ColorToRgb(tempColor);
+                                rgb.r -= (rgb.r/denom);
+                                rgb.r += (tempRgb.r/denom);
+
+                                rgb.g -= (rgb.g/denom);
+                                rgb.g += (tempRgb.g/denom);
+
+                                rgb.b -= (rgb.b/denom);
+                                rgb.b += (tempRgb.b/denom);
+
+                                color = RgbToColor(rgb);
+                            }
+
+                            sampleY -= ry;
+                            sampleY += stepsize;
+                            sampleX -= rx;
+                        }
+                        sampleX += stepsize;
+                    }
+                } else {
+                    v3_t direction = CanvasToViewport(bitmap, vp, {(float)x, (float)y}) * scene->camera.rotation;
+                    color = TraceRay({scene->camera.position, direction, 1e30f}, 1, FINF, 10, scene, bvhState);
+                }
                 CanvasPutPixel(bitmap, {(float)x, (float)y}, color);
 
                 if (scene->settings.subsampling){

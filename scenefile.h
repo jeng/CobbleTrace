@@ -72,7 +72,8 @@ struct scene_stack_t {
 struct settings_t {
     int numberOfThreads;
     bool subsampling;
-    bool wireFrame;
+    bool wireframe;
+    bool supersampling;
 };
 
 struct scene_triangle_lookup_t {

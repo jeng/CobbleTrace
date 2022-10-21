@@ -53,15 +53,16 @@ v3_t twentysixcell[NUM_CELLS] =
 
 void WriteSettings(){
     printf("  \"settings\":{\n");
-    printf("    \"numberOfThreads\": 8,\n");
-    printf("    \"subsampling\": true,\n");
-    printf("    \"wireFrame\": false\n");
+    printf("    \"numberOfThreads\": 16,\n");
+    printf("    \"subsampling\": false,\n");
+    printf("    \"wireframe\": false,\n");
+    printf("    \"supersampling\": true\n");
     printf("  }\n");
 }
 
 void WriteCamera(){
     printf("  \"camera\":{\n");
-    printf("    \"position\": [6, 6, -20]\n");
+    printf("    \"position\": [0, 6, -20]\n");
     printf("  }\n");
 }
 
@@ -284,14 +285,7 @@ void WriteCube(v3_t translation, float xRotation, float yRotation, v3_t color, b
 
     for(int i = 0; i < 12; i++){
         triangle_t t = tlist[i];        
-        t.p1 = TranslatePoint(rotate_y, t.p1);
-        t.p2 = TranslatePoint(rotate_y, t.p2);
-        t.p3 = TranslatePoint(rotate_y, t.p3);
-
-        t.p1 = TranslatePoint(rotate_x, t.p1);
-        t.p2 = TranslatePoint(rotate_x, t.p2);
-        t.p3 = TranslatePoint(rotate_x, t.p3);
-        
+       
         t.p1 = TranslatePoint(scale, t.p1);
         t.p2 = TranslatePoint(scale, t.p2);
         t.p3 = TranslatePoint(scale, t.p3);
@@ -300,6 +294,14 @@ void WriteCube(v3_t translation, float xRotation, float yRotation, v3_t color, b
         t.p2 = TranslatePoint(translate, t.p2);
         t.p3 = TranslatePoint(translate, t.p3);
 
+        t.p1 = TranslatePoint(rotate_y, t.p1);
+        t.p2 = TranslatePoint(rotate_y, t.p2);
+        t.p3 = TranslatePoint(rotate_y, t.p3);
+
+        t.p1 = TranslatePoint(rotate_x, t.p1);
+        t.p2 = TranslatePoint(rotate_x, t.p2);
+        t.p3 = TranslatePoint(rotate_x, t.p3);
+ 
         //WriteSphere(t.p1, 0.04, true);
         //WriteSphere(t.p2, 0.04, true);
         //WriteSphere(t.p3, 0.04, true);
@@ -328,8 +330,8 @@ void BuildDisplay(){
 
                     WriteCube(
                         v2, 
-                        0,//-M_PI/8, 
-                        0,//M_PI/4, 
+                        -M_PI/8, 
+                        M_PI/4, 
                         {241, 156, 187},
                         false
                         );

@@ -107,11 +107,11 @@ int main(int argc, char *argv[]){
         }
 
 #if TEST_BVH == 0
-        RayThread(&env, &scene);
 
-        if (scene.settings.wireFrame)
+        if (scene.settings.wireframe)
             RasterizeScene(&env, &scene);
-
+        else
+            RayThread(&env, &scene);
 #endif        
 
         Blit(&env);

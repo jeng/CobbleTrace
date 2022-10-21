@@ -1195,7 +1195,17 @@
             "color": [255, 0, 255],
             "specular": 100,
             "reflection": 0.0000
+        },
+        {
+            "type": "triangle",
+            "p1": [0, 100, 5],
+            "p2": [-100, -100, 5],
+            "p3": [100, -100, 5],
+            "color": [255, 0, 255],
+            "specular": 0,
+            "reflection": 1.0000
         } 
+ 
     ],
     "lights":[
         {
@@ -1219,7 +1229,8 @@
 ,
   "settings":{
     "numberOfThreads": 8,
-    "subsampling": true,
-    "wireFrame": false
+    "subsampling": false,
+    "wireframe": false,
+    "supersampling": true
   }
 }
