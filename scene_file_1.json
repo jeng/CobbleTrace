@@ -88,6 +88,6 @@
     "settings":{
         "numberOfThreads": 16,
         "subsampling": false,
-        "wireFrame": true
+        "wireframe": true
     }
 }

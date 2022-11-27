@@ -15,8 +15,13 @@ Triangle code is based on Glassner's Ray Tracing book, Scratch A Pixel and UC Da
 - https://www.youtube.com/watch?v=Ahp6LDQnK4Y
 - https://archive.org/details/AnIntroductionToRayTracing_201902
 
+The BVH code is a version of jbikker's modified to work with my engine:
+https://jacco.ompf2.com/2022/04/13/how-to-build-a-bvh-part-1-basics/
+_Currently sphere rendering is disabled, outside of the wireframe view, since I haven't update the BVH to work with spheres._
 
 ![Screenshot](screenshot.png)
+![Screenshot2](screenshot2.png)
+![objectLoading](objectLoading2.png)
 
 ## Windows Build
 - Place this repo in %USERPROFILE%/src/CobbleTrace

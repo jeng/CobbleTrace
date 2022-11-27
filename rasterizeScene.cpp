@@ -1,3 +1,7 @@
+
+#define _USE_MATH_DEFINES // for C++
+#include <cmath>
+#include <cstring>
 #include "rasterizeScene.h"
 #include "color.h"
 #include "draw2d.h"
@@ -287,14 +291,118 @@ static void RenderSceneObject(environment_t *env, viewport_t *viewport, scene_ob
     }
 }
 
-bool RasterizeScene(environment_t *env, scene_t *scene){
-    SDL_Log("I'm doing the raster");
+static bool
+HandleKeyboard(environment_t *env, float *yaw, float *pitch, float *roll, v3_t *pos){
+    bool result = false;
+    event_t *event = ReadEvent(&env->events);
 
+    while (event){
+        if (event->type == ET_KEY_DOWN && event->value == 'w'){
+            pos->y+= 0.1;
+            result = true;
+        } else if (event->type == ET_KEY_DOWN && event->value == 's'){
+            pos->y-= 0.1;
+            result = true;
+        } else if (event->type == ET_KEY_DOWN && event->value == 'd'){
+            pos->x+= 0.1;
+            result = true;
+        } else if (event->type == ET_KEY_DOWN && event->value == 'a'){
+            pos->x-= 0.1;
+            result = true;
+        } else if (event->type == ET_KEY_DOWN && event->value == 'i'){
+            pos->z+= 0.1;
+            result = true;
+        } else if (event->type == ET_KEY_DOWN && event->value == 'o'){
+            pos->z-= 0.1;
+            result = true;
+        } else if (event->type == ET_KEY_DOWN && event->value == 'r'){
+            (*roll)+=(M_PI_4/4);
+            result = true;
+        } else if (event->type == ET_KEY_DOWN && event->value == 'y'){
+            (*yaw)+=(M_PI_4/4);
+            result = true;
+        } else if (event->type == ET_KEY_DOWN && event->value == 'p'){
+            (*pitch)+=(M_PI_4/4);
+            result = true;
+        } else if (event->type == ET_KEY_DOWN && event->value == 'c'){
+            *pos = {0, 0, 0};
+            *yaw = 0; *pitch = 0; *roll = 0;
+            result = true;
+        } else if (event->type == ET_KEY_DOWN && event->value == 'm'){
+            char s[1024];
+            sprintf(s,"camera position: %f %f %f\n", pos->x, pos->y, pos->z);
+            SDL_Log(s);
+            result = true;
+        }
+        event = ReadEvent(&env->events);
+     }
+    return result;
+}
+
+static bool
+HandleUpdates(environment_t *env, scene_t *scene){
+    static bool changesMade = true;
+    static float yaw = 0;
+    static float pitch = 0;
+    static float roll = 0;
+    static v3_t cpos = {0, 0, -8};
+    bitmapSettings_t *bitmap = env->bitmap;
+    viewport_t vp = {1, 1, 1};
+    v3_t origin = {0, 0, 0};
+
+    changesMade = changesMade || HandleKeyboard(env, &yaw, &pitch, &roll, &scene->camera.position);
+
+    if (!changesMade)
+        return false;
+
+    changesMade = false;
+    
+    scene->camera.rotation.data[0][0] = cos(yaw) * cos(pitch);
+    scene->camera.rotation.data[0][1] = cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll);
+    scene->camera.rotation.data[0][2] = cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll);
+    scene->camera.rotation.data[1][0] = sin(yaw) * cos(pitch);
+    scene->camera.rotation.data[1][1] = sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll);
+    scene->camera.rotation.data[1][2] = sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll);
+    scene->camera.rotation.data[2][0] = -sin(yaw);
+    scene->camera.rotation.data[2][1] = cos(pitch) * sin(roll);
+    scene->camera.rotation.data[2][2] = cos(pitch) * cos(roll);
+    return true;
+
+    // float height = bitmap->height/2; 
+    // float yStart = -height;
+    // float yStep  = bitmap->height/scene->settings.numberOfThreads;
+
+//    for(int i=0; i < scene->settings.numberOfThreads; i++) {
+//        // Generate unique data for each thread to work with.
+//        displayPart[i]->yStart   = yStart;
+//        displayPart[i]->yEnd     = yStart+yStep;
+//        displayPart[i]->env      = env;
+//        displayPart[i]->viewport = vp;
+//        displayPart[i]->scene    = scene;
+//        displayPart[i]->bvhState = bvhState;
+//        displayPart[i]->status   = WS_READY;
+//
+//        yStart += yStep;
+//
+//        if (displayPart[i]->thread == NULL) {
+//           exit(3);
+//        }
+//    }
+}
+
+void ClearBackground(environment_t *env){
+    memset(env->bitmap->memory, 0, env->bitmap->width * env->bitmap->height * sizeof(uint32_t));
+}
+
+bool RasterizeScene(environment_t *env, scene_t *scene){
     viewport_t viewport = {1, 1, 1};
 
     //DrawLine(env, {0, 0, 0}, {100, 200, 0}, RgbToColor(0x11, 0xaa, 0xee));
     //DrawLine(env, {100, 200, 0}, {-100, -50, 0}, RgbToColor(0x11, 0xaa, 0x33));
     //DrawLine(env, {0, 200, 0}, {10, -50, 0}, RgbToColor(0xee, 0x11, 0x33));
+    if (HandleUpdates(env, scene)){
+        ClearBackground(env);
+    }
 
     for(int i = 0; i < scene->objectStack.index; i++){
         scene_object_t workingObject = scene->objectStack.objects[i];

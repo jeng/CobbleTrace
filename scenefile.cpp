@@ -1,47 +1,14 @@
 #include <assert.h>
 #include "scenefile.h"
 #include "color.h"
+#include "objectLoader.h"
+#include "ctstring.h"
 
 struct FileBuffer{
     int size;
     int index;
     char *data;
 };
-
-struct String {
-    int size;
-    char *data;
-};
-
-
-String
-CharPtrToString(const char *p){
-    String result;
-    result.size = 0;
-    result.data = (char *)p;
-    while(*p != '\0'){
-        result.size++;
-        p++;
-    }
-    return result;
-}
-
-bool
-IsStringEqual(String *a, String *b){
-    if (a->size != b->size)
-        return false;
-    for(int i = 0; i < a->size; i++) {
-        if (a->data[i] != b->data[i])
-            return false;
-    }
-    return true;
-}
-
-bool
-IsStringEqual(String *a, const char *b){
-    String sB = CharPtrToString(b);
-    return IsStringEqual(a, &sB);
-}
 
 void
 SkipSpace(FileBuffer *fb){
@@ -70,8 +37,6 @@ PushToken(FileBuffer *fb){
     if (fb->index > 0)
         fb->index--;
 }
-
-
 
 String
 GetString(FileBuffer *fb){
@@ -235,6 +200,8 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
                 } else if (IsStringEqual(&s, "triangle")){
                     obj.type = OT_TRIANGLE;
                     triangleCount++;
+                } else if (IsStringEqual(&s, "import")){
+                    obj.type = OT_IMPORT;
                 } else {
                     assert(false);
                 }
@@ -255,6 +222,14 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
                 obj.triangle.p2 = GetV3(fb);
             } else if (IsStringEqual(&s, "p3")) {
                 obj.triangle.p3 = GetV3(fb);
+            } else if (IsStringEqual(&s, "filename")) {
+                obj.import.filename = GetString(fb);
+            } else if (IsStringEqual(&s, "position")){
+                obj.import.position = GetV3(fb);
+            } else if (IsStringEqual(&s, "rotation")){
+                obj.import.rotation = GetV3(fb);
+            } else if (IsStringEqual(&s, "scale")){
+                obj.import.scale = GetV3(fb);
             }
 
             char c = GetToken(fb);
@@ -263,12 +238,17 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
             PushToken(fb);
             AssertNextToken(fb, ',');
         }
+
+        if (obj.type == OT_IMPORT){
+            ImportObject(obj, scene);
+        } else {
+            //Push the object on the stack
+            assert(scene->objectStack.index < scene->objectStack.size);
+            SDL_memcpy(&scene->objectStack.objects[scene->objectStack.index++], &obj, sizeof(obj));
+            scene->triangleLookup.triangleCount += triangleCount;
+        }
         
-        //Push the object on the stack
-        assert(scene->objectStack.index < scene->objectStack.size);
-        SDL_memcpy(&scene->objectStack.objects[scene->objectStack.index++], &obj, sizeof(obj));
-        scene->triangleLookup.triangleCount += triangleCount;
-        
+       
         //Are we at the end of the list?
         char c = GetToken(fb);
         if (c == ']')

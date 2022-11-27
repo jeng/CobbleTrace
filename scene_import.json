@@ -1,0 +1,69 @@
+{
+    "objects":[
+        {
+            "type": "import",
+            "filename": "models/roundedCube.obj",
+            "position": [0, 2.5, 0],
+            "rotation": [0, 0, 0],
+            "scale": [1, 1, 1],
+            "color": [255, 230, 102],
+            "specular": 100,
+            "reflection": 0
+         },
+         {
+            "type": "import",
+            "filename": "models/roundedCube.obj",
+            "position": [0, 0, 0],
+            "rotation": [0, 0.7854, 0.3927],
+            "scale": [0.75, 0.75, 0.75],
+            "color": [204, 255, 102],
+            "specular": 100,
+            "reflection": 0
+         },
+         {
+            "type": "import",
+            "filename": "models/roundedCube.obj",
+            "position": [2.45, 1, 2],
+            "rotation": [0.3927, 0.7854, 0],
+            "scale": [0.65, 0.65, 0.65],
+            "color": [153, 255, 102],
+            "specular": 100,
+            "reflection": 0
+         },
+         {
+            "type": "import",
+            "filename": "models/roundedCube.obj",
+            "position": [-2.45, 1, 2],
+            "rotation": [-0.3927, -0.7854, 0],
+            "scale": [0.65, 0.65, 0.65],
+            "color": [229, 255, 102],
+            "specular": 100,
+            "reflection": 0
+         }
+    ],
+    "lights":[
+        {
+            "type": "ambient",
+            "intensity": 0.2
+        },
+        {
+            "type": "point",
+            "intensity": 0.6,
+            "position": [2, 1, -10]
+        },
+        {
+            "type": "directional",
+            "intensity": 0.2,
+            "direction": [1, 4, -14]
+        }
+    ],
+    "camera":{
+        "position": [0, 1.4, -5.2]
+    },
+    "settings":{
+        "numberOfThreads": 32,
+        "subsampling": false,
+        "wireframe": false,
+        "supersampling": true
+    }
+}

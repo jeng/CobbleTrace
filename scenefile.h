@@ -4,13 +4,15 @@
 #include <stdlib.h>
 #include "mymath.h"
 #include "SDL.h"
+#include "ctstring.h"
 
 #define MAX_OBJECTS 100000
 #define MAX_LIGHTS 100
 #define MAX_SCENEFILE (1<<22)
 
 enum lightType_t {LT_POINT, LT_DIRECTIONAL, LT_AMBIENT};
-enum object_t {OT_SPHERE, OT_TRIANGLE};
+enum object_t {OT_SPHERE, OT_TRIANGLE, OT_IMPORT};
+enum import_type_t {IT_BLENDER, IT_PLY};
 enum stack_type_t {ST_LIGHT, ST_OBJECT};
 
 
@@ -38,11 +40,19 @@ struct triangle_t {
     v3_t centroid;
 };
 
+struct import_t {
+    String filename;
+    v3_t position;
+    v3_t rotation;
+    v3_t scale;
+};
+
 struct scene_object_t {
     object_t type;
     union{
         sphere_t sphere;
         triangle_t triangle;
+        import_t import;
     };
     material_t material;
 };

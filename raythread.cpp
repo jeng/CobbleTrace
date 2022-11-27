@@ -223,6 +223,7 @@ ClosestIntersection(ray_t ray,
     //    }
     //}
     
+    
     return (ray.t != 1e30f);
 
 
@@ -428,7 +429,7 @@ HandleKeyboard(environment_t *env, float *yaw, float *pitch, float *roll, v3_t *
 }
 
 
-int RayTracePatition(void *data) { 
+int RayTracePartition(void *data) { 
     while(true){
         display_partition_t *partition  = (display_partition_t*)data;
         if (partition->status != WS_READY){
@@ -605,7 +606,7 @@ AllocatePartitions(scene_t *scene){
         displayPart[i]->status = WS_FINISHED;
 
         displayPart[i]->thread = SDL_CreateThread( 
-            RayTracePatition,       // thread function name
+            RayTracePartition,       // thread function name
             "",
             displayPart[i]);// returns the thread identifier 
     }
