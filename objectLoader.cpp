@@ -1,15 +1,16 @@
 //TODO the file handling routines will need to move to the platform layer
 //TODO also need to come up with a better way the handle object memory
 //TODO for now I just want to get the object loaded and on the screen
-//#include <windows.h>
+//TODO I also need to add asset caching so that I don't load all of the
+//triangles again when we already have the object in memory
+
 #include <cstdio>
 #include <cassert>
 #include <cstdio>
-//#include "platform.h"
 #include "objectLoader.h"
-//#include "trirender.h"
+#include "fileBuffer.h"
 
-#define LOG_OBJECT_DATA (1) 
+#define LOG_OBJECT_DATA (0) 
 
 enum readState_t{
     NEW_LINE,
@@ -142,34 +143,9 @@ void PlaceTriangle(scene_object_t *obj, v3_t translate, v3_t rotation, v3_t scal
     obj->triangle.p1 = TranslatePoint(mTranslate, obj->triangle.p1);
     obj->triangle.p2 = TranslatePoint(mTranslate, obj->triangle.p2);
     obj->triangle.p3 = TranslatePoint(mTranslate, obj->triangle.p3);
-
 }
 
-
-//If I could write this anyway that I wanted
-// stringList_t sl = StringList(filename);
-// for(int i = 0; i < sl.count; i++){
-//     if (ObjectLineType(sl[i]) == VERTEX){
-//         AppendList(vertices, ParseLine(sl[i]));
-//     } else if (ObjectLineType(sl[i]) == FACE){
-//         AppendList(faces, ParseLine(sl[i]))
-//     }
-// }
-
-//TODO start using my own string class.
-//I can use the one from the static site generator.  Just clean up the interface some
-void ImportObject(scene_object_t importObject, scene_t *scene){
-//triangleList_t LoadObject(const char *filename, scene_object_t obj, scene){
-    //OFSTRUCT fileStruct;
-    //HANDLE fileHandle;
-
-    //fileHandle = CreateFile(importObject.filename,  // file to open
-    //                   GENERIC_READ,                // open for reading
-    //                   FILE_SHARE_READ,             // share for reading
-    //                   NULL,                        // default security
-    //                   OPEN_EXISTING,               // existing file only
-    //                   FILE_ATTRIBUTE_NORMAL,       // normal file
-    //                   NULL);                       // no attr. template
+void ImportPlyObject(scene_object_t importObject, scene_t *scene){
     FILE *fp;
     
     char *filename;
@@ -186,15 +162,6 @@ void ImportObject(scene_object_t importObject, scene_t *scene){
     fseek(fp, 0, SEEK_END);
     int pos = ftell(fp);
     fseek(fp, 0, SEEK_SET);
-    
-    //TODO Change this code to dynamically allocate the buffer size based on the file.
-    //     We will also need to dynamically grow the memory allocated for the NUM_FACES and NUM_VERT
-    //
-    //     Once we're loading ply files this code will have a lot of overlap with that code.  At that point it 
-    //     will probably make sense to create a dynamic structure for v3_t.
-    //
-    //     I mention stacks in the comment below related to v3 vertices and faces but I'm not using a stack for allocations.
-    //     I can probably change all of the scene parsing code to use a stack based allocation scheme.
 
     uint64_t bytesRead;
     const int BUFSIZE = 1024;
@@ -233,109 +200,89 @@ void ImportObject(scene_object_t importObject, scene_t *scene){
         bytesRead = fread(buffer, sizeof(char), BUFSIZE - 1, fp);
         if (bytesRead <= 0)
             break;
-
-        //If the line starts with a v this is vertex data and we need to push a new v3 on the stack.
-        //If the line starts with a f this is data for the face and we'll need
-        //to refer back to the vertex data to get the correct vertices that
-        //make up this triangle
-        //
-        //If we run out of bytes will reading then we need to get more data from the file
-        for(int i = 0; i < bytesRead; i++){
-            if (state == NEW_LINE && buffer[i] == 'v'){
-                state = READ_V;
-                nidx = -1;
-            } else if (state == NEW_LINE && buffer[i] == 'f'){
-                state = READ_F;
-                nidx = -1;
-            } else if (state == READ_V){
-                if (buffer[i] == '\n'){
-                    //TODO I hate this code
-                    if (nidx == 2){
-                        val[val_idx] = '\0';
-                        sscanf(val, "%lf", &vertices[vidx].z);
-                    }
-                    vtotal++;
-                    vidx++;
-                    assert(vidx < NUM_VERT);
-                    state = NEW_LINE;
-                    //TODO this is all a huge hack.  I'm assuming single spaces between numbers.  I'm not sure why I didn't make this a skip space call to begin with?
-                } else if (buffer[i] == ' '){
-                    val[val_idx] = '\0';
-                    val_idx = 0;
-
-                    if (nidx == 0){
-                        sscanf(val, "%lf", &vertices[vidx].x);
-                    } else if (nidx == 1){
-                        sscanf(val, "%lf", &vertices[vidx].y);
-                    } else if (nidx == 2){
-                        sscanf(val, "%lf", &vertices[vidx].z);
-                    }
-
-                    nidx++;
-                } else {
-                    val[val_idx++] = buffer[i];
-                }
-            } else if (state == READ_F){
-                if (buffer[i] == '\n'){
-                    if (nidx == 2){
-                        val[val_idx] = '\0';
-                        sscanf(val, "%lf", &faces[fidx].z);
-                    }
-                    ftotal++;
-                    fidx++;
-                    assert(fidx < NUM_FACES);
-                    state = NEW_LINE;
-                    //TODO this is all a huge hack.  I'm assuming single spaces between numbers
-                } else if (buffer[i] == ' '){
-                    val[val_idx] = '\0';
-                    val_idx = 0;
-
-                    if (nidx == 0){
-                        sscanf(val, "%lf", &faces[fidx].x);
-                    } else if (nidx == 1){
-                        sscanf(val, "%lf", &faces[fidx].y);
-                    } else if (nidx == 2){
-                        sscanf(val, "%lf", &faces[fidx].z);
-                    }
-
-                    nidx++;
-                } else {
-                    val[val_idx++] = buffer[i];
-                }
-            } else if (state == SKIP){
-                if (buffer[i] == '\n')
-                    state = NEW_LINE;
-            } else {
-                state = SKIP;
-            }
-        }
-
-        if (bytesRead < BUFSIZE - 1)
-            break;
     }
+ 
+}
 
-    fclose(fp);
 
+//If I could write this anyway that I wanted
+// stringList_t sl = StringList(filename);
+// for(int i = 0; i < sl.count; i++){
+//     if (ObjectLineType(sl[i]) == VERTEX){
+//         AppendList(vertices, ParseLine(sl[i]));
+//     } else if (ObjectLineType(sl[i]) == FACE){
+//         AppendList(faces, ParseLine(sl[i]))
+//     }
+// }
+
+//TODO start using my own string class.
+//I can use the one from the static site generator.  Just clean up the interface some
+void ImportBlenderObject(scene_object_t importObject, scene_t *scene){
+
+    char *filename;
+    int filenameSize = importObject.import.filename.size + 1;
+    filename = (char *)malloc(filenameSize * sizeof(char));
+    assert(filename != NULL);
+    StringToCharPtr(importObject.import.filename, filename, filenameSize);
+    FileBuffer fb;
+    OpenFileBuffer(&fb, filename);
+    free(filename);
+    
+    //TODO Change this code to dynamically allocate the buffer size based on the file.
+    //     We will also need to dynamically grow the memory allocated for the NUM_FACES and NUM_VERT
+    //
+    //     Once we're loading ply files this code will have a lot of overlap with that code.  At that point it 
+    //     will probably make sense to create a dynamic structure for v3_t.
+    //
+    //     I mention stacks in the comment below related to v3 vertices and faces but I'm not using a stack for allocations.
+    //     I can probably change all of the scene parsing code to use a stack based allocation scheme.
+
+    readState_t state = NEW_LINE;
+
+    //TODO this is terrible and needs to be fixed.  I'm not loading anything huge though
+    //Just start with 1024 faces and triangles 
+    const int NUM_FACES = 1024;
+    const int NUM_VERT = 1024;
+    v3_t faces[NUM_FACES];
+    v3_t vertices[NUM_VERT];
+    int vi = 0;
+    int vf = 0;
+
+    while(!IsEOF(&fb)){
+        char c = GetToken(&fb);
+        if (c == '#'){
+            SkipLine(&fb);
+        } else if (c == 'o'){
+            SkipLine(&fb);
+        } else if (c == 'v'){
+            vertices[vi++] = GetV3Raw(&fb);
+            assert(vi < NUM_VERT);
+        } else if (c == 'f'){
+            faces[vf++] = GetV3Raw(&fb);
+            assert(vf < NUM_FACES);
+        }
+    }
+    CloseFileBuffer(&fb);
     //store the faces in an object that can be returned
-    if (ftotal <= 0)
+    if (vf <= 0)
         return;
 
 #if LOG_OBJECT_DATA    
     SDL_Log("Vector Output\n");
-    for(int i = 0; i < vtotal; i++){
+    for(int i = 0; i < vi; i++){
         char s[1024];
         sprintf(s, "v %f %f %f\n", vertices[i].x, vertices[i].y, vertices[i].z);
         SDL_Log(s);
     }
     SDL_Log("\n\nFace Output\n");
-    for(int i = 0; i < ftotal; i++){
+    for(int i = 0; i < vf; i++){
         char s[1024];
         sprintf(s, "f %.0f %.0f %.0f\n", faces[i].x, faces[i].y, faces[i].z);
         SDL_Log(s);
     }
 #endif    
 
-    for (int i = 0; i < ftotal; i++){
+    for (int i = 0; i < vf; i++){
         //TODO In the bvh code I'm converting from triangles back to a vertex list iirc.  
         //     I need to just decide on one and stick with it.  I could easily change the 
         //     triangle loading code in scenefile.cpp to use faces and vertices
@@ -351,18 +298,14 @@ void ImportObject(scene_object_t importObject, scene_t *scene){
         SDL_memcpy(&scene->objectStack.objects[scene->objectStack.index++], &obj, sizeof(obj));
         scene->triangleLookup.triangleCount++;
     }
-    //result.triangles = (triangle_t*)malloc(sizeof(triangle_t) * ftotal);
-    //for(int i = 0; i < ftotal; i++){
-    //    assert(faces[i].x - 1 >= 0);
-    //    assert(faces[i].x - 1 < vtotal);
-    //    assert(faces[i].y - 1 >= 0);
-    //    assert(faces[i].y - 1 < vtotal);
-    //    assert(faces[i].z - 1 >= 0);
-    //    assert(faces[i].z - 1 < vtotal);
- 
-    //    result.triangles[i].p1 = vertices[(int)faces[i].x - 1];
-    //    result.triangles[i].p2 = vertices[(int)faces[i].y - 1];
-    //    result.triangles[i].p3 = vertices[(int)faces[i].z - 1];
-    //}
-    //result.size = ftotal;
+
+}
+
+
+void ImportObject(scene_object_t importObject, scene_t *scene){
+    if (importObject.import.type == IT_BLENDER){
+        ImportBlenderObject(importObject, scene);
+    } else if (importObject.import.type == IT_PLY){
+        ImportPlyObject(importObject, scene);
+    }
 }

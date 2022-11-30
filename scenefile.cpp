@@ -3,93 +3,10 @@
 #include "color.h"
 #include "objectLoader.h"
 #include "ctstring.h"
+#include "fileBuffer.h"
 
-struct FileBuffer{
-    int size;
-    int index;
-    char *data;
-};
 
-void
-SkipSpace(FileBuffer *fb){
-    while(fb->index < fb->size){
-        if (fb->data[fb->index] != '\n' && 
-            fb->data[fb->index] != '\r' && 
-            fb->data[fb->index] != ' ' && 
-            fb->data[fb->index] != '\t'){            
-            return;
-        }
-        fb->index++;
-    }
-}
-
-char
-GetToken(FileBuffer *fb){
-    if (fb->index >= fb->size){
-        return 0;
-    }
-    SkipSpace(fb);
-    return fb->data[fb->index++];
-}
-
-void
-PushToken(FileBuffer *fb){
-    if (fb->index > 0)
-        fb->index--;
-}
-
-String
-GetString(FileBuffer *fb){
-    String result;
-    result.size = 0;
-    result.data = NULL;
-
-    SkipSpace(fb);
-
-    if (fb->index >= fb->size)
-        return result;
-
-    assert(fb->data[fb->index] == '"');
-
-    fb->index++;
-    
-    if (fb->index >= fb->size)
-        return result;
-
-    result.data = &fb->data[fb->index];
-
-    while(fb->index < fb->size && fb->data[fb->index] != '"'){
-        result.size++;
-        fb->index++;
-    }
-
-    fb->index++;
-
-    return result;
-}
-
-bool
-GetBoolean(FileBuffer *fb){
-    bool result;
-    String s;
-    char d[10] = {0};
-    s.size = 0;
-    s.data = (char*)&d;
-    SkipSpace(fb);
-
-    while(fb->index < fb->size && s.size < 5 && 'a' <= fb->data[fb->index] && fb->data[fb->index] <= 'z'){
-        s.data[s.size++] = fb->data[fb->index++];
-    }
-
-    if (IsStringEqual(&s, "true"))
-        return true;
-    else if (IsStringEqual(&s, "false"))
-        return false;
-    else
-        assert(false);
-
-    return false;
-}
+//TODO clean up the GetString code by using a string stack
 
 void 
 InitSceneData(scene_t *scene){
@@ -112,89 +29,32 @@ InitSceneData(scene_t *scene){
 }
 
 void
-AssertNextToken(FileBuffer *fb, char c){
-    char x = GetToken(fb);
-    if (c != x){
-        char s[100];
-        sprintf(s, "expected %c got %c\n", c, x);
-        SDL_Log("%s", s);
-    }
-    assert(c == x);
-}
-
-float
-GetNumber(FileBuffer *fb){
-    char c = GetToken(fb);
-    float n = 1;
-    float result = 0;
-    bool decimal = false;
-    float d = 10;
-
-    if (c == '-'){
-        n = -1;
-    } else {
-        PushToken(fb);
-    }
-    
-    while(fb->index < fb->size){
-        c =  fb->data[fb->index];
-        if ('0' <= c && c <= '9'){
-            if (decimal){
-                float x = c - '0';
-                x = x/d;
-                result += x;
-                d *= 10;
-                
-            } else {
-                result = result * 10;
-                result += c - '0';
-            }
-        } else if (c == '.'){            
-            assert(!decimal);
-            decimal = true;
-        } else {
-            break;
-        }
-        fb->index++;
-    }
-
-    return n * result;    
-}
-
-v3_t
-GetV3(FileBuffer *fb){
-    float f;
-    v3_t v;
-    AssertNextToken(fb, '[');
-    v.x = GetNumber(fb);
-    AssertNextToken(fb, ',');
-    v.y = GetNumber(fb);
-    AssertNextToken(fb, ',');
-    v.z = GetNumber(fb);
-    AssertNextToken(fb, ']');
-    return v;
-}
-
-void
 LoadObjects(FileBuffer *fb, scene_t *scene){
+    char data[FB_LINE_SZ];
+    char fileData[FB_LINE_SZ];
+
     String s;
+    s.data = &data[0];
+
+    String filename;
+    filename.data = &fileData[0];
 
     AssertNextToken(fb, '[');
     
     int triangleCount = 0;
 
-    while(fb->index < fb->size){
+    while(!IsEOF(fb)){
 
         AssertNextToken(fb, '{');
         scene_object_t obj = {};
-        while(fb->index < fb->size){            
+        while(!IsEOF(fb)){            
             AssertNextToken(fb, '"');
             PushToken(fb);
-            s = GetString(fb);
+            GetString(fb, &s, FB_LINE_SZ);
             AssertNextToken(fb, ':');
 
             if (IsStringEqual(&s, "type")){
-                s = GetString(fb);
+                GetString(fb, &s, FB_LINE_SZ);
                 if (IsStringEqual(&s,"sphere")){
                     obj.type = OT_SPHERE;                    
                 } else if (IsStringEqual(&s, "triangle")){
@@ -223,13 +83,24 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
             } else if (IsStringEqual(&s, "p3")) {
                 obj.triangle.p3 = GetV3(fb);
             } else if (IsStringEqual(&s, "filename")) {
-                obj.import.filename = GetString(fb);
+                //TODO hack. I really want to be using a string stack here.
+                //     Every GetString call would push a new string on the stack
+                //     then when at the end of the scope we just pop everything
+                GetString(fb, &filename, FB_LINE_SZ);
+                obj.import.filename = filename;
             } else if (IsStringEqual(&s, "position")){
                 obj.import.position = GetV3(fb);
             } else if (IsStringEqual(&s, "rotation")){
                 obj.import.rotation = GetV3(fb);
             } else if (IsStringEqual(&s, "scale")){
                 obj.import.scale = GetV3(fb);
+            } else if (IsStringEqual(&s, "type")){
+                GetString(fb, &s, FB_BUFFER_SZ);
+                if (IsStringEqual(&s, "blender")){
+                    obj.import.type = IT_BLENDER;
+                } else if (IsStringEqual(&s, "ply")) {
+                    obj.import.type = IT_PLY;
+                }
             }
 
             char c = GetToken(fb);
@@ -261,21 +132,24 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
 
 void
 LoadLights(FileBuffer *fb, scene_t *scene){
+
     String s;
+    char data[FB_LINE_SZ];
+    s.data = &data[0];
 
     AssertNextToken(fb, '[');
-    while(fb->index < fb->size){
+    while(!IsEOF(fb)){
 
         AssertNextToken(fb, '{');
         light_t light = {};
-        while(fb->index < fb->size){            
+        while(!IsEOF(fb)){            
             AssertNextToken(fb, '"');
             PushToken(fb);
-            s = GetString(fb);
+            GetString(fb, &s, FB_LINE_SZ);
             AssertNextToken(fb, ':');
 
             if (IsStringEqual(&s, "type")){
-                s = GetString(fb);
+                GetString(fb, &s, FB_LINE_SZ);
                 if (IsStringEqual(&s,"ambient")){
                     light.type = LT_AMBIENT;                    
                 } else if (IsStringEqual(&s, "point")){
@@ -319,10 +193,13 @@ LoadLights(FileBuffer *fb, scene_t *scene){
 void
 LoadCamera(FileBuffer *fb, scene_t *scene){
     String s;
+    char data[FB_LINE_SZ];
+    s.data = &data[0];
+
     AssertNextToken(fb, '{');
     AssertNextToken(fb, '"');
     PushToken(fb);
-    s = GetString(fb);
+    GetString(fb, &s, FB_LINE_SZ);
     AssertNextToken(fb, ':');
     if (IsStringEqual(&s, "position")){
         scene->camera.position = GetV3(fb);
@@ -335,12 +212,15 @@ LoadCamera(FileBuffer *fb, scene_t *scene){
 void
 LoadSettings(FileBuffer *fb, scene_t *scene){
     String s;
+    char data[FB_LINE_SZ];
+    s.data = &data[0];
+
     AssertNextToken(fb, '{');
 
-    while(fb->index < fb->size){            
+    while(!IsEOF(fb)){            
         AssertNextToken(fb, '"');
         PushToken(fb);
-        s = GetString(fb);
+        GetString(fb, &s, FB_LINE_SZ);
         AssertNextToken(fb, ':');
 
         if (IsStringEqual(&s, "numberOfThreads")){
@@ -376,26 +256,20 @@ void MakeTriangleLookup(scene_t *scene){
 void
 ParseSceneFile(char *filename, scene_t *scene){    
     FileBuffer fb;
-    FILE *f = fopen(filename, "r");
-    fb.data = (char*)calloc(sizeof(char), MAX_SCENEFILE);
-    fb.index = 0;
-    fb.size = fread(fb.data, sizeof(char), MAX_SCENEFILE, f);
-    if (!feof(f)){
-        SDL_Log("Scene file is too big");
-        exit(1);
-    }
-    fclose(f);
+    OpenFileBuffer(&fb, filename);
 
     AssertNextToken(&fb, '{');
 
     String s;
+    char data[FB_LINE_SZ];
+    s.data = &data[0];
 
     scene->triangleLookup.triangleCount = 0;
 
-    while(fb.index < fb.size){
+    while(!IsEOF(&fb)){
         AssertNextToken(&fb, '"');
         PushToken(&fb);
-        s = GetString(&fb);        
+        GetString(&fb, &s, FB_LINE_SZ);        
 
         if (IsStringEqual(&s, "objects")){
             AssertNextToken(&fb, ':');
@@ -420,6 +294,6 @@ ParseSceneFile(char *filename, scene_t *scene){
     }
 
     MakeTriangleLookup(scene);
-            
-    free(fb.data);
+
+    CloseFileBuffer(&fb);            
 }

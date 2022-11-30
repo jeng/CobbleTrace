@@ -45,6 +45,7 @@ struct import_t {
     v3_t position;
     v3_t rotation;
     v3_t scale;
+    import_type_t type;
 };
 
 struct scene_object_t {
