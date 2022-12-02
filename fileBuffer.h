@@ -9,7 +9,7 @@
 #define FB_BUFFER_SZ (4096)
 #define FB_LINE_SZ (1024)
 
-struct FileBuffer{
+struct filebuffer_t{
     FILE *file;
     size_t size;
     size_t prevOffset;
@@ -19,20 +19,22 @@ struct FileBuffer{
     char line[FB_LINE_SZ];
 };
 
-extern void OpenFileBuffer(FileBuffer *fb, char *filename);
-extern void SkipSpace(FileBuffer *fb);
-extern char GetToken(FileBuffer *fb);
-extern void PushToken(FileBuffer *fb);
-extern void GetString(FileBuffer *fb, String *result, int maxSize);
-//extern String GetString(FileBuffer *fb);
-extern bool GetBoolean(FileBuffer *fb);
-extern void AssertNextToken(FileBuffer *fb, char c);
-extern float GetNumber(FileBuffer *fb);
-extern v3_t GetV3(FileBuffer *fb);
-extern v3_t GetV3Raw(FileBuffer *fb);
-extern void NextToken(FileBuffer *fb); 
-extern void CloseFileBuffer(FileBuffer *fb);
-extern bool IsEOF(FileBuffer *fb);
-extern void SkipLine(FileBuffer *fb);
+extern void OpenFileBuffer(filebuffer_t *fb, char *filename);
+extern void OpenFileBuffer(filebuffer_t *fb, string_t filename);
+extern void SkipSpace(filebuffer_t *fb);
+extern char GetToken(filebuffer_t *fb);
+extern void PushToken(filebuffer_t *fb);
+extern void GetString(filebuffer_t *fb, string_t *result, int maxSize);
+extern void GetStringRaw(filebuffer_t *fb, string_t *result, int maxSize);
+//extern string_t GetString(filebuffer_t *fb);
+extern bool GetBoolean(filebuffer_t *fb);
+extern void AssertNextToken(filebuffer_t *fb, char c);
+extern float GetNumber(filebuffer_t *fb);
+extern v3_t GetV3(filebuffer_t *fb);
+extern v3_t GetV3Raw(filebuffer_t *fb);
+extern void NextToken(filebuffer_t *fb); 
+extern void CloseFileBuffer(filebuffer_t *fb);
+extern bool IsEOF(filebuffer_t *fb);
+extern void SkipLine(filebuffer_t *fb);
  
 #endif //__FILE_BUFFER_H__

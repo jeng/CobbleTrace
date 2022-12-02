@@ -29,14 +29,14 @@ InitSceneData(scene_t *scene){
 }
 
 void
-LoadObjects(FileBuffer *fb, scene_t *scene){
+LoadObjects(filebuffer_t *fb, scene_t *scene){
     char data[FB_LINE_SZ];
     char fileData[FB_LINE_SZ];
 
-    String s;
+    string_t s;
     s.data = &data[0];
 
-    String filename;
+    string_t filename;
     filename.data = &fileData[0];
 
     AssertNextToken(fb, '[');
@@ -94,12 +94,12 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
                 obj.import.rotation = GetV3(fb);
             } else if (IsStringEqual(&s, "scale")){
                 obj.import.scale = GetV3(fb);
-            } else if (IsStringEqual(&s, "type")){
+            } else if (IsStringEqual(&s, "format")){
                 GetString(fb, &s, FB_BUFFER_SZ);
                 if (IsStringEqual(&s, "blender")){
-                    obj.import.type = IT_BLENDER;
+                    obj.import.format = IT_BLENDER;
                 } else if (IsStringEqual(&s, "ply")) {
-                    obj.import.type = IT_PLY;
+                    obj.import.format = IT_PLY;
                 }
             }
 
@@ -131,9 +131,9 @@ LoadObjects(FileBuffer *fb, scene_t *scene){
 }
 
 void
-LoadLights(FileBuffer *fb, scene_t *scene){
+LoadLights(filebuffer_t *fb, scene_t *scene){
 
-    String s;
+    string_t s;
     char data[FB_LINE_SZ];
     s.data = &data[0];
 
@@ -191,8 +191,8 @@ LoadLights(FileBuffer *fb, scene_t *scene){
 }
 
 void
-LoadCamera(FileBuffer *fb, scene_t *scene){
-    String s;
+LoadCamera(filebuffer_t *fb, scene_t *scene){
+    string_t s;
     char data[FB_LINE_SZ];
     s.data = &data[0];
 
@@ -210,8 +210,8 @@ LoadCamera(FileBuffer *fb, scene_t *scene){
 }
 
 void
-LoadSettings(FileBuffer *fb, scene_t *scene){
-    String s;
+LoadSettings(filebuffer_t *fb, scene_t *scene){
+    string_t s;
     char data[FB_LINE_SZ];
     s.data = &data[0];
 
@@ -255,12 +255,12 @@ void MakeTriangleLookup(scene_t *scene){
 
 void
 ParseSceneFile(char *filename, scene_t *scene){    
-    FileBuffer fb;
+    filebuffer_t fb;
     OpenFileBuffer(&fb, filename);
 
     AssertNextToken(&fb, '{');
 
-    String s;
+    string_t s;
     char data[FB_LINE_SZ];
     s.data = &data[0];
 

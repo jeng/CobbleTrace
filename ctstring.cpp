@@ -1,8 +1,8 @@
 #include "ctstring.h"
 
-String
+string_t
 CharPtrToString(const char *p){
-    String result;
+    string_t result;
     result.size = 0;
     result.data = (char *)p;
     while(*p != '\0'){
@@ -13,7 +13,7 @@ CharPtrToString(const char *p){
 }
 
 void
-StringToCharPtr(String s, char *p, int max){
+StringToCharPtr(string_t s, char *p, int max){
     for(int i = 0; i < max && i < s.size; i++){
         p[i] = s.data[i];
     }
@@ -24,7 +24,7 @@ StringToCharPtr(String s, char *p, int max){
 }
 
 bool
-IsStringEqual(String *a, String *b){
+IsStringEqual(string_t *a, string_t *b){
     if (a->size != b->size)
         return false;
     for(int i = 0; i < a->size; i++) {
@@ -35,7 +35,7 @@ IsStringEqual(String *a, String *b){
 }
 
 bool
-IsStringEqual(String *a, const char *b){
-    String sB = CharPtrToString(b);
+IsStringEqual(string_t *a, const char *b){
+    string_t sB = CharPtrToString(b);
     return IsStringEqual(a, &sB);
 }

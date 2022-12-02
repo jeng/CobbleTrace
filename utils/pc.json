@@ -38475,12 +38475,13 @@
         }
     ],
   "camera":{
-    "position": [6, 6, -20]
+    "position": [5, 5, -12.2]
   }
 ,
   "settings":{
     "numberOfThreads": 16,
     "subsampling": true,
-    "wireFrame": false
+    "wireframe": false,
+    "supersampling": false
   }
 }

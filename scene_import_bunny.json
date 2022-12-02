@@ -1,0 +1,40 @@
+{
+    "objects":[
+        {
+            "type": "import",
+            "filename": "models/bunny.ply",
+            "format": "ply",
+            "position": [0, 0, 0],
+            "rotation": [0.392, 3.14, 0],
+            "scale": [200, 200, 200],
+            "color": [255, 255, 255],
+            "specular": 100,
+            "reflection": 0
+         }
+    ],
+    "lights":[
+        {
+            "type": "ambient",
+            "intensity": 0.2
+        },
+        {
+            "type": "point",
+            "intensity": 0.6,
+            "position": [20, 110, -300]
+        },
+        {
+            "type": "directional",
+            "intensity": 0.2,
+            "direction": [-100, 40, -140]
+        }
+    ],
+    "camera":{
+        "position": [5.0, 17.0, -55.0]
+    },
+    "settings":{
+        "numberOfThreads": 32,
+        "subsampling": false,
+        "wireframe": false,
+        "supersampling": true
+    }
+}

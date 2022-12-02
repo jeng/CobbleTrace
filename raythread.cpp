@@ -422,6 +422,11 @@ HandleKeyboard(environment_t *env, float *yaw, float *pitch, float *roll, v3_t *
             *pos = {0, 0, 0};
             *yaw = 0; *pitch = 0; *roll = 0;
             result = true;
+        } else if (event->type == ET_KEY_DOWN && event->value == 'm'){
+            char s[1024];
+            sprintf(s,"camera position: %f %f %f\n", pos->x, pos->y, pos->z);
+            SDL_Log(s);
+            result = true;
         }
         event = ReadEvent(&env->events);
      }
@@ -640,12 +645,12 @@ RayThread(environment_t *env, scene_t *scene){
     static triangle_t *triangles;
 
     if (!initialized){
-        AllocatePartitions(scene);
         uint32_t size;
         triangle_t *triangles = GetSceneTriangles(scene, &size);
         bvhState = InitializeBVHState(triangles, size);
         BuildBVH(&bvhState);
         initialized = true;
+        AllocatePartitions(scene);
     }
 
     // Wait until all workers have finished.

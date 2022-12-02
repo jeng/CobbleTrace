@@ -1,7 +1,7 @@
 #include "fileBuffer.h"
 
 void
-GetNextBuffer(FileBuffer *fb){
+GetNextBuffer(filebuffer_t *fb){
     fseek(fb->file, fb->nextOffset, SEEK_SET);
     int bytesRead = fread(fb->buffer, sizeof(char), FB_BUFFER_SZ, fb->file);
     fb->prevOffset = fb->nextOffset;
@@ -10,7 +10,7 @@ GetNextBuffer(FileBuffer *fb){
 }
 
 void
-GetPrevBuffer(FileBuffer *fb){
+GetPrevBuffer(filebuffer_t *fb){
     fb->prevOffset -= FB_BUFFER_SZ;
     fseek(fb->file, fb->prevOffset, SEEK_SET);
     int bytesRead = fread(fb->buffer, sizeof(char), FB_BUFFER_SZ, fb->file);
@@ -19,12 +19,12 @@ GetPrevBuffer(FileBuffer *fb){
  }
 
 bool
-IsEOF(FileBuffer *fb){
+IsEOF(filebuffer_t *fb){
     return (fb->index + fb->prevOffset > fb->size);
 }
 
 void
-NextChar(FileBuffer *fb){
+NextChar(filebuffer_t *fb){
     fb->index++;
     if (fb->index >= FB_BUFFER_SZ){
         if (!IsEOF(fb)){
@@ -33,21 +33,24 @@ NextChar(FileBuffer *fb){
     }
 }
 
+bool
+IsSpace(filebuffer_t *fb){
+    return 
+        (fb->buffer[fb->index] == '\n' || 
+        fb->buffer[fb->index] == '\r' || 
+        fb->buffer[fb->index] == ' '  || 
+        fb->buffer[fb->index] == '\t');            
+}
+
 void
-SkipSpace(FileBuffer *fb){
-    while(!IsEOF(fb)){
-        if (fb->buffer[fb->index] != '\n' && 
-            fb->buffer[fb->index] != '\r' && 
-            fb->buffer[fb->index] != ' ' && 
-            fb->buffer[fb->index] != '\t'){            
-            return;
-        }
+SkipSpace(filebuffer_t *fb){
+    while(!IsEOF(fb) && IsSpace(fb)){
         NextChar(fb);
     }
 }
 
 void
-SkipLine(FileBuffer *fb){
+SkipLine(filebuffer_t *fb){
     while(!IsEOF(fb) && fb->buffer[fb->index] != '\n' && fb->buffer[fb->index] != '\r'){
         NextChar(fb);
     }
@@ -55,7 +58,7 @@ SkipLine(FileBuffer *fb){
 }
 
 char
-GetToken(FileBuffer *fb){
+GetToken(filebuffer_t *fb){
     if (IsEOF(fb)){
         return 0;
     }
@@ -66,7 +69,7 @@ GetToken(FileBuffer *fb){
 }
 
 void
-PushToken(FileBuffer *fb){
+PushToken(filebuffer_t *fb){
     if (fb->index > 0)
         fb->index--;
     else {
@@ -75,7 +78,7 @@ PushToken(FileBuffer *fb){
 }
 
 void
-GetString(FileBuffer *fb, String *result, int maxSize){
+GetString(filebuffer_t *fb, string_t *result, int maxSize){
     result->size = 0;
 
     SkipSpace(fb);
@@ -101,10 +104,28 @@ GetString(FileBuffer *fb, String *result, int maxSize){
     NextChar(fb);
 }
 
+void
+GetStringRaw(filebuffer_t *fb, string_t *result, int maxSize){
+    result->size = 0;
+
+    SkipSpace(fb);
+
+    if (IsEOF(fb))
+        return;
+
+    //I will need to use a string pool for this or have the string buffer passed in
+    int i = 0;
+    while(i < maxSize && !IsEOF(fb) && !IsSpace(fb)){
+        result->data[i++] = fb->buffer[fb->index];
+        result->size++;
+        NextChar(fb);
+    }
+}
+
 bool
-GetBoolean(FileBuffer *fb){
+GetBoolean(filebuffer_t *fb){
     bool result;
-    String s;
+    string_t s;
     char d[10] = {0};
     s.size = 0;
     s.data = (char*)&d;
@@ -126,7 +147,7 @@ GetBoolean(FileBuffer *fb){
 }
 
 void
-AssertNextToken(FileBuffer *fb, char c){
+AssertNextToken(filebuffer_t *fb, char c){
     char x = GetToken(fb);
     if (c != x){
         char s[100];
@@ -137,11 +158,14 @@ AssertNextToken(FileBuffer *fb, char c){
 }
 
 float
-GetNumber(FileBuffer *fb){
+GetNumber(filebuffer_t *fb){
     char c = GetToken(fb);
     float n = 1;
     float result = 0;
     bool decimal = false;
+    bool scientific = false;
+    int exponent = 0;
+    int esign = 1;
     float d = 10;
 
     if (c == '-'){
@@ -153,12 +177,14 @@ GetNumber(FileBuffer *fb){
     while(!IsEOF(fb)){
         c =  fb->buffer[fb->index];
         if ('0' <= c && c <= '9'){
-            if (decimal){
+            if (scientific){
+                exponent = exponent * 10;
+                exponent += c - '0'; 
+            } else if (decimal){
                 float x = c - '0';
                 x = x/d;
                 result += x;
                 d *= 10;
-                
             } else {
                 result = result * 10;
                 result += c - '0';
@@ -166,17 +192,22 @@ GetNumber(FileBuffer *fb){
         } else if (c == '.'){            
             assert(!decimal);
             decimal = true;
+        } else if (c == 'e'){
+            assert(!scientific);
+            scientific = true;
+        } else if (c == '-' && scientific){
+            esign = -1;
         } else {
             break;
         }
         NextChar(fb);
     }
 
-    return n * result;    
+    return (n * result) * pow(10, esign * exponent);    
 }
 
 v3_t
-GetV3(FileBuffer *fb){
+GetV3(filebuffer_t *fb){
     float f;
     v3_t v;
     AssertNextToken(fb, '[');
@@ -190,7 +221,7 @@ GetV3(FileBuffer *fb){
 }
 
 v3_t
-GetV3Raw(FileBuffer *fb){
+GetV3Raw(filebuffer_t *fb){
     float f;
     v3_t v;
     SkipSpace(fb);
@@ -202,8 +233,7 @@ GetV3Raw(FileBuffer *fb){
     return v;
 }
 
-
-void OpenFileBuffer(FileBuffer *fb, char *filename){
+void OpenFileBuffer(filebuffer_t *fb, char *filename){
     fb->file = fopen(filename, "rb");
 
     assert(fb->file != NULL);
@@ -217,7 +247,17 @@ void OpenFileBuffer(FileBuffer *fb, char *filename){
     fb->index = 0;
  }
 
-void CloseFileBuffer(FileBuffer *fb){
+ void OpenFileBuffer(filebuffer_t *fb, string_t filename){
+    char *s;
+    int filenameSize = filename.size + 1;
+    s = (char *)malloc(filenameSize * sizeof(char));
+    assert(s != NULL);
+    StringToCharPtr(filename, s, filenameSize);
+    OpenFileBuffer(fb, s);
+    free(s);
+ }
+
+void CloseFileBuffer(filebuffer_t *fb){
     fclose(fb->file);
 }
 

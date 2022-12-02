@@ -1,0 +1,40 @@
+{
+    "objects":[
+        {
+            "type": "import",
+            "filename": "models/dragon.ply",
+            "format": "ply",
+            "position": [0, 0, 0],
+            "rotation": [0.392, 3.14, 0],
+            "scale": [90, 90, 90],
+            "color": [255, 155, 255],
+            "specular": 100,
+            "reflection": 0
+         }
+    ],
+    "lights":[
+        {
+            "type": "ambient",
+            "intensity": 0.2
+        },
+        {
+            "type": "point",
+            "intensity": 0.6,
+            "position": [2, 11, -30]
+        },
+        {
+            "type": "directional",
+            "intensity": 0.2,
+            "direction": [-10, 4, -14]
+        }
+    ],
+    "camera":{
+        "position": [0.50, 8.5, -26.4]
+    },
+    "settings":{
+        "numberOfThreads": 32,
+        "subsampling": false,
+        "wireframe": false,
+        "supersampling": true
+    }
+}

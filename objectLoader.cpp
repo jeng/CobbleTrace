@@ -7,17 +7,11 @@
 #include <cstdio>
 #include <cassert>
 #include <cstdio>
+#include <cstring>
 #include "objectLoader.h"
 #include "fileBuffer.h"
 
 #define LOG_OBJECT_DATA (0) 
-
-enum readState_t{
-    NEW_LINE,
-    READ_V,
-    READ_F,
-    SKIP
-};
 
 v3_t TranslatePoint(m4x4_t translation, v3_t point){
     v4_t v4;
@@ -146,87 +140,72 @@ void PlaceTriangle(scene_object_t *obj, v3_t translate, v3_t rotation, v3_t scal
 }
 
 void ImportPlyObject(scene_object_t importObject, scene_t *scene){
-    FILE *fp;
-    
-    char *filename;
-    int filenameSize = importObject.import.filename.size + 1;
-    filename = (char *)malloc(filenameSize * sizeof(char));
-    assert(filename != NULL);
-    StringToCharPtr(importObject.import.filename, filename, filenameSize);
+    filebuffer_t fb;
+    OpenFileBuffer(&fb, importObject.import.filename);
+    string_t token;
+    char data[FB_LINE_SZ];
+    token.data = &data[0];
+    token.size = 0;
+    GetStringRaw(&fb, &token, FB_LINE_SZ);
+    assert(IsStringEqual(&token, "ply"));
 
-    fp = fopen(filename, "r");
-    
-    free(filename);
+    uint32_t totalVertices = 0;
+    uint32_t totalFaces = 0;
 
-    assert(fp != NULL);
-    fseek(fp, 0, SEEK_END);
-    int pos = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    uint64_t bytesRead;
-    const int BUFSIZE = 1024;
-    char buffer[BUFSIZE];
-    readState_t state = NEW_LINE;
-
-    //TODO this is terrible and needs to be fixed.  I'm not loading anything huge though
-    //Just start with 1024 faces and triangles 
-    const int NUM_FACES = 1024;
-    const int NUM_VERT = 1024;
-    v3_t faces[NUM_FACES];
-    v3_t vertices[NUM_VERT];
-    int fidx = 0;
-    int vidx = 0;
-    int vtotal = 0;
-    int ftotal = 0;
-
-    int nidx = 0;
-    int val_idx = 0;
-    char val[1024];//TODO I hate this code
-
-    for(;;){
-
-        //TODO Get the file size from the file info
-        //and allocate here
-
-        //if (!ReadFile(fileHandle, 
-        //            buffer,
-        //            BUFSIZE - 1,
-        //            &bytesRead, NULL)){
-        //    ErrorDialog("Reading the file failed");
-        //    CloseHandle(fileHandle);
-        //    return result;
-        //}
-
-        bytesRead = fread(buffer, sizeof(char), BUFSIZE - 1, fp);
-        if (bytesRead <= 0)
+    while(!IsEOF(&fb)){
+        GetStringRaw(&fb, &token, FB_LINE_SZ);
+        if (IsStringEqual(&token, "element")){
+            GetStringRaw(&fb, &token, FB_LINE_SZ);
+            if (IsStringEqual(&token, "vertex")){
+                totalVertices = GetNumber(&fb);
+            } else if (IsStringEqual(&token, "face")){
+                totalFaces = GetNumber(&fb);
+            }
+        } else if (IsStringEqual(&token, "end_header")){
+            SkipLine(&fb);
             break;
+        }
     }
- 
+
+    v3_t *vertices = (v3_t*)malloc(totalVertices * sizeof(v3_t));
+    for(int i = 0; i < totalVertices && !IsEOF(&fb); i++){
+        vertices[i] = GetV3Raw(&fb);
+        SkipLine(&fb);
+    }
+
+    //v3_t *faces = (v3_t*)malloc(totalFaces * sizeof(v3_t));
+    for(int i = 0; i < totalFaces && !IsEOF(&fb); i++){
+        int n = GetNumber(&fb);
+        assert(n == 3);
+        v3_t face = GetV3Raw(&fb);
+        SkipLine(&fb);
+
+        //TODO In the bvh code I'm converting from triangles back to a vertex list iirc.  
+        //     I need to just decide on one and stick with it.  I could easily change the 
+        //     triangle loading code in scenefile.cpp to use faces and vertices
+
+        scene_object_t obj = importObject;
+        obj.type = OT_TRIANGLE;
+        obj.triangle.p1 = vertices[(int)face.x];
+        obj.triangle.p2 = vertices[(int)face.y];
+        obj.triangle.p3 = vertices[(int)face.z];
+
+        PlaceTriangle(&obj, importObject.import.position, importObject.import.rotation, importObject.import.scale);
+
+        assert(scene->objectStack.index < scene->objectStack.size);
+        SDL_memcpy(&scene->objectStack.objects[scene->objectStack.index++], &obj, sizeof(obj));
+        scene->triangleLookup.triangleCount++;
+    }
+
+    free(vertices);
+    CloseFileBuffer(&fb);
 }
-
-
-//If I could write this anyway that I wanted
-// stringList_t sl = StringList(filename);
-// for(int i = 0; i < sl.count; i++){
-//     if (ObjectLineType(sl[i]) == VERTEX){
-//         AppendList(vertices, ParseLine(sl[i]));
-//     } else if (ObjectLineType(sl[i]) == FACE){
-//         AppendList(faces, ParseLine(sl[i]))
-//     }
-// }
 
 //TODO start using my own string class.
 //I can use the one from the static site generator.  Just clean up the interface some
 void ImportBlenderObject(scene_object_t importObject, scene_t *scene){
-
-    char *filename;
-    int filenameSize = importObject.import.filename.size + 1;
-    filename = (char *)malloc(filenameSize * sizeof(char));
-    assert(filename != NULL);
-    StringToCharPtr(importObject.import.filename, filename, filenameSize);
-    FileBuffer fb;
-    OpenFileBuffer(&fb, filename);
-    free(filename);
+    filebuffer_t fb;
+    OpenFileBuffer(&fb, importObject.import.filename);
     
     //TODO Change this code to dynamically allocate the buffer size based on the file.
     //     We will also need to dynamically grow the memory allocated for the NUM_FACES and NUM_VERT
@@ -236,8 +215,6 @@ void ImportBlenderObject(scene_object_t importObject, scene_t *scene){
     //
     //     I mention stacks in the comment below related to v3 vertices and faces but I'm not using a stack for allocations.
     //     I can probably change all of the scene parsing code to use a stack based allocation scheme.
-
-    readState_t state = NEW_LINE;
 
     //TODO this is terrible and needs to be fixed.  I'm not loading anything huge though
     //Just start with 1024 faces and triangles 
@@ -303,9 +280,9 @@ void ImportBlenderObject(scene_object_t importObject, scene_t *scene){
 
 
 void ImportObject(scene_object_t importObject, scene_t *scene){
-    if (importObject.import.type == IT_BLENDER){
+    if (importObject.import.format == IT_BLENDER){
         ImportBlenderObject(importObject, scene);
-    } else if (importObject.import.type == IT_PLY){
+    } else if (importObject.import.format == IT_PLY){
         ImportPlyObject(importObject, scene);
     }
 }
